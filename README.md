@@ -22,13 +22,13 @@ Créer un salon et partager son code avec un autre navigateur ou une fenêtre pr
 - Écoute classique (10–30 secondes) ou progressive : extraits de 2, 5 et 10 secondes aux instants 0, 7 et 17 d’une manche de 30 secondes.
 - Bonus facultatif « Qui a ajouté ce son ? », 25 points, tous les propriétaires d’un doublon étant acceptés.
 - Jokers 50/50 et +5 secondes personnelles, chacun utilisable une fois par partie. 50/50 uniquement en QCM. Jokers restitués si la manche est annulée.
-- Équipes Citron/Violet de même taille au lancement ; somme des scores individuels et podium d’équipe.
+- Équipes Or/Ciel de même taille au lancement ; somme des scores individuels et podium d’équipe.
 - Réactions rapides après les manches et en fin de partie, fréquence limitée.
 - Récap personnel : taux de réussite musical, meilleur temps de réponse complète, morceaux ratés, manches annulées, export CSV et revanche.
 - Préchargement audio collectif, délai maximal de 15 secondes. Erreur de lecture ou blocage prolongé signalé par un client : annulation collective sans points.
 - Reconnexion automatique dans le même onglet et reprise de la dernière session depuis le même navigateur. Retour en spectateur jusqu’à la manche suivante si le joueur n’était pas dans les participants de la préparation.
 - Transfert manuel du rôle de créateur ; transfert automatique à un joueur connecté après 15 secondes d’absence.
-- Page `/guide` expliquant l’ensemble des règles ; favicon et signature « Made by Christian Badolo ».
+- Page `/guide` expliquant l’ensemble des règles ; favicon et signature « Made by Christian BADOLO ».
 
 ## Spotify et limites
 
