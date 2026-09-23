@@ -1,0 +1,610 @@
+{
+  "name": "Karaoke 🔥",
+  "source": "https://open.spotify.com/playlist/529YXsrxFWfTzqRDVwl9s9",
+  "retrievedAt": "2026-09-23T21:25:05.779Z",
+  "exposedCount": 100,
+  "playableCount": 100,
+  "complete": false,
+  "tracks": [
+    {
+      "title": "Photograph",
+      "artist": "Ed Sheeran",
+      "spotifyUri": "spotify:track:1dyRiQZRGHZvesHh2hbp8g",
+      "url": "https://p.scdn.co/mp3-preview/d90f4e5f15d8ed411307945560b1db8cca6b253b"
+    },
+    {
+      "title": "Perfect",
+      "artist": "Ed Sheeran",
+      "spotifyUri": "spotify:track:0tgVpDi06FyKpA1z0VMD4v",
+      "url": "https://p.scdn.co/mp3-preview/4e30857a3c7da3f8891483643e310bb233afadd2"
+    },
+    {
+      "title": "Closer",
+      "artist": "The Chainsmokers, Halsey",
+      "spotifyUri": "spotify:track:7BKLCZ1jbUBVqRi2FVlTVw",
+      "url": "https://p.scdn.co/mp3-preview/cfd565c4d3c621771e6d25d99749b9fc200e396c"
+    },
+    {
+      "title": "Shape of You",
+      "artist": "Ed Sheeran",
+      "spotifyUri": "spotify:track:7qiZfU4dY1lWllzX7mPBI3",
+      "url": "https://p.scdn.co/mp3-preview/7339548839a263fd721d01eb3364a848cad16fa7"
+    },
+    {
+      "title": "Havana (feat. Young Thug)",
+      "artist": "Camila Cabello, Young Thug",
+      "spotifyUri": "spotify:track:1rfofaqEpACxVEHIZBJe6W",
+      "url": "https://p.scdn.co/mp3-preview/6dda4dcce4175c6c150d24e5d0bcf6890914a119"
+    },
+    {
+      "title": "Scars To Your Beautiful",
+      "artist": "Alessia Cara",
+      "spotifyUri": "spotify:track:0wI7QkCcs8FUQE1OkXUIqd",
+      "url": "https://p.scdn.co/mp3-preview/da7510a6987187086774a17a3f79cf6752ff1f87"
+    },
+    {
+      "title": "I Want It That Way",
+      "artist": "Backstreet Boys",
+      "spotifyUri": "spotify:track:47BBI51FKFwOMlIiX6m8ya",
+      "url": "https://p.scdn.co/mp3-preview/4eec31d974fd622ac7858affd9759f2017dd87e4"
+    },
+    {
+      "title": "What Makes You Beautiful",
+      "artist": "One Direction",
+      "spotifyUri": "spotify:track:4cluDES4hQEUhmXj6TXkSo",
+      "url": "https://p.scdn.co/mp3-preview/3abcba42a4cb3566c4840c29fd6695459065b1ae"
+    },
+    {
+      "title": "Love Me Like You Do",
+      "artist": "Ellie Goulding",
+      "spotifyUri": "spotify:track:1zArTa4SIVhech5bHzzxeh",
+      "url": "https://p.scdn.co/mp3-preview/b2eeb0b7e6a6d9743c4240383d68377dd323d8a7"
+    },
+    {
+      "title": "Night Changes",
+      "artist": "One Direction",
+      "spotifyUri": "spotify:track:5O2P9iiztwhomNh8xkR9lJ",
+      "url": "https://p.scdn.co/mp3-preview/8b4aa4ee753c15c1553c7e993e0937d24d02257e"
+    },
+    {
+      "title": "Symphony (feat. Zara Larsson)",
+      "artist": "Clean Bandit, Zara Larsson",
+      "spotifyUri": "spotify:track:72gv4zhNvRVdQA0eOenCal",
+      "url": "https://p.scdn.co/mp3-preview/3772cf00484834c2adc16bfe9d4d638cba4d985d"
+    },
+    {
+      "title": "Baby",
+      "artist": "Justin Bieber, Ludacris",
+      "spotifyUri": "spotify:track:6epn3r7S14KUqlReYr77hA",
+      "url": "https://p.scdn.co/mp3-preview/6f57db4d7d782298f0d2de9097a45f4671cb2fd6"
+    },
+    {
+      "title": "A Thousand Miles",
+      "artist": "Vanessa Carlton",
+      "spotifyUri": "spotify:track:4w1lzcaoZ1IC2K5TwjalRP",
+      "url": "https://p.scdn.co/mp3-preview/1dab77144140b38cf360a7e770f002335884954f"
+    },
+    {
+      "title": "Wrecking Ball",
+      "artist": "Miley Cyrus",
+      "spotifyUri": "spotify:track:2vwlzO0Qp8kfEtzTsCXfyE",
+      "url": "https://p.scdn.co/mp3-preview/8cb1217469a600994abed97e86b2762853b05a8e"
+    },
+    {
+      "title": "Uptown Funk (feat. Bruno Mars)",
+      "artist": "Mark Ronson, Bruno Mars",
+      "spotifyUri": "spotify:track:32OlwWuMpZ6b0aN2RZOeMS",
+      "url": "https://p.scdn.co/mp3-preview/67ea20051d23a47d74becbe982285c5320dbe577"
+    },
+    {
+      "title": "That's What I Like",
+      "artist": "Bruno Mars",
+      "spotifyUri": "spotify:track:0KKkJNfGyhkQ5aFogxQAPU",
+      "url": "https://p.scdn.co/mp3-preview/93046e987d8c5bfdbeea2768ac1a8ecea17bd7e0"
+    },
+    {
+      "title": "Memories",
+      "artist": "Maroon 5",
+      "spotifyUri": "spotify:track:4cktbXiXOapiLBMprHFErI",
+      "url": "https://p.scdn.co/mp3-preview/e0faeb5bd806d8c5673114e2aa9c57f72dd6330a"
+    },
+    {
+      "title": "Take Me To Church",
+      "artist": "Hozier",
+      "spotifyUri": "spotify:track:3dYD57lRAUcMHufyqn9GcI",
+      "url": "https://p.scdn.co/mp3-preview/333349ad660d769df4c7dbe970c34854150a7aed"
+    },
+    {
+      "title": "Señorita",
+      "artist": "Shawn Mendes, Camila Cabello",
+      "spotifyUri": "spotify:track:6v3KW9xbzN5yKLt9YKDYA2",
+      "url": "https://p.scdn.co/mp3-preview/cf6ae4e497f91c285cc57ec2be36bbad2133af47"
+    },
+    {
+      "title": "24K Magic",
+      "artist": "Bruno Mars",
+      "spotifyUri": "spotify:track:6b8Be6ljOzmkOmFslEb23P",
+      "url": "https://p.scdn.co/mp3-preview/3a76820d510fa5f84abb413e9d13815bcc86da0f"
+    },
+    {
+      "title": "Bad Liar",
+      "artist": "Imagine Dragons",
+      "spotifyUri": "spotify:track:2RSHsoi04658QL5xgQVov3",
+      "url": "https://p.scdn.co/mp3-preview/56413ec463879763e7f9f347f82675e2cff6654c"
+    },
+    {
+      "title": "Work from Home (feat. Ty Dolla $ign)",
+      "artist": "Fifth Harmony, Ty Dolla $ign",
+      "spotifyUri": "spotify:track:4tCtwWceOPWzenK2HAIJSb",
+      "url": "https://p.scdn.co/mp3-preview/1f231da8b98f707e591dfb2de4087bb2fbd05bb6"
+    },
+    {
+      "title": "CAN'T STOP THE FEELING! (from DreamWorks Animation's \"TROLLS\")",
+      "artist": "Justin Timberlake",
+      "spotifyUri": "spotify:track:6JV2JOEocMgcZxYSZelKcc",
+      "url": "https://p.scdn.co/mp3-preview/abf52d96f3f35554fcc0ea7005d9e1ce848efd77"
+    },
+    {
+      "title": "Locked Away (feat. Adam Levine)",
+      "artist": "R. City, Adam Levine",
+      "spotifyUri": "spotify:track:7x5xYW5W42OGPAdHUyyguy",
+      "url": "https://p.scdn.co/mp3-preview/6d586948db45ed8e819bfaa9a4828ce95cf7e845"
+    },
+    {
+      "title": "I Don't Care",
+      "artist": "Ed Sheeran, Justin Bieber",
+      "spotifyUri": "spotify:track:6hvRoJ0BTZywxu8UCPBkzx",
+      "url": "https://p.scdn.co/mp3-preview/6f2852c06d2d781b1dc06553d75232bd8d4d43bc"
+    },
+    {
+      "title": "Too Good At Goodbyes",
+      "artist": "Sam Smith",
+      "spotifyUri": "spotify:track:1mXVgsBdtIVeCLJnSnmtdV",
+      "url": "https://p.scdn.co/mp3-preview/2e2100af8cd386f628684caafb50662b67656de0"
+    },
+    {
+      "title": "Girls Like You (feat. Cardi B) - Cardi B Version",
+      "artist": "Maroon 5, Cardi B",
+      "spotifyUri": "spotify:track:7fa9MBXhVfQ8P8Df9OEbD8",
+      "url": "https://p.scdn.co/mp3-preview/97c2e4a893847661dfb996a0cfd527fae500e217"
+    },
+    {
+      "title": "Shallow",
+      "artist": "Lady Gaga, Bradley Cooper",
+      "spotifyUri": "spotify:track:2VxeLyX666F8uXCJ0dZF8B",
+      "url": "https://p.scdn.co/mp3-preview/ad2317459e4acec34d54fc34282089bfb58fc9c5"
+    },
+    {
+      "title": "Before You Go",
+      "artist": "Lewis Capaldi",
+      "spotifyUri": "spotify:track:2gMXnyrvIjhVBUZwvLZDMP",
+      "url": "https://p.scdn.co/mp3-preview/fbeb79e81f4f5ab2dcb210d1ac85f028806302bd"
+    },
+    {
+      "title": "Human",
+      "artist": "Rag'n'Bone Man",
+      "spotifyUri": "spotify:track:58zsLZPvfflaiIbNWoA22O",
+      "url": "https://p.scdn.co/mp3-preview/ff98758b77ea59b96ff224a56a8e6064f575a514"
+    },
+    {
+      "title": "Sign of the Times",
+      "artist": "Harry Styles",
+      "spotifyUri": "spotify:track:5Ohxk2dO5COHF1krpoPigN",
+      "url": "https://p.scdn.co/mp3-preview/3f677086b8a90e1b9affde439d2ba55c77044799"
+    },
+    {
+      "title": "Another Love",
+      "artist": "Tom Odell",
+      "spotifyUri": "spotify:track:7jtQIBanIiJOMS6RyCx6jZ",
+      "url": "https://p.scdn.co/mp3-preview/6dc83e07692981abde09dea0e8819d7a5873fb92"
+    },
+    {
+      "title": "When We Were Young",
+      "artist": "Adele",
+      "spotifyUri": "spotify:track:6O5TrlFWTYvznd9fMC0VvU",
+      "url": "https://p.scdn.co/mp3-preview/b35676526fa76530da3e9b880a64305e761bc2ce"
+    },
+    {
+      "title": "As It Was",
+      "artist": "Harry Styles",
+      "spotifyUri": "spotify:track:4Dvkj6JhhA12EX05fT7y2e",
+      "url": "https://p.scdn.co/mp3-preview/42727cab3cfa9342609304336cd9655d0a730bad"
+    },
+    {
+      "title": "Ride",
+      "artist": "Twenty One Pilots",
+      "spotifyUri": "spotify:track:2Z8WuEywRWYTKe1NybPQEW",
+      "url": "https://p.scdn.co/mp3-preview/b571ceecaadc03941bdf4e683ea26e4e6d3f7c17"
+    },
+    {
+      "title": "Dancing With A Stranger (with Normani)",
+      "artist": "Sam Smith, Normani",
+      "spotifyUri": "spotify:track:3xgT3xIlFGqZjYW9QlhJWp",
+      "url": "https://p.scdn.co/mp3-preview/b7569664e112640a6125846e25340f3c8c2cfa14"
+    },
+    {
+      "title": "Until I Found You",
+      "artist": "Stephen Sanchez",
+      "spotifyUri": "spotify:track:6VhuP99TE6gYNQRJIlAWFD",
+      "url": "https://p.scdn.co/mp3-preview/0a164f0a3b44a259620445c5d2a1b23c2636956b"
+    },
+    {
+      "title": "Die With A Smile",
+      "artist": "Lady Gaga, Bruno Mars",
+      "spotifyUri": "spotify:track:7so0lgd0zP2Sbgs2d7a1SZ",
+      "url": "https://p.scdn.co/mp3-preview/5d962f377ad36292fb39435c9d4d1db7b7ff4e0f"
+    },
+    {
+      "title": "Me, Myself & I",
+      "artist": "G-Eazy, Bebe Rexha",
+      "spotifyUri": "spotify:track:40YcuQysJ0KlGQTeGUosTC",
+      "url": "https://p.scdn.co/mp3-preview/8088e63f113e96b260d85c9ab1397ce269351b26"
+    },
+    {
+      "title": "Always Remember Us This Way",
+      "artist": "Lady Gaga",
+      "spotifyUri": "spotify:track:2rbDhOo9Fh61Bbu23T2qCk",
+      "url": "https://p.scdn.co/mp3-preview/8ea58f2b189ff88963a777d3b51dc42147e5d442"
+    },
+    {
+      "title": "My Heart Will Go On - Love Theme from \"Titanic\"",
+      "artist": "Céline Dion",
+      "spotifyUri": "spotify:track:33LC84JgLvK2KuW43MfaNq",
+      "url": "https://p.scdn.co/mp3-preview/68c13229ec9b1b4a5ea580e801061fd7791857c4"
+    },
+    {
+      "title": "Can't Help Falling in Love",
+      "artist": "Elvis Presley",
+      "spotifyUri": "spotify:track:44AyOl4qVkzS48vBsbNXaC",
+      "url": "https://p.scdn.co/mp3-preview/ddb3e782f04a42c4380d839e23a7e675a5b1f9ec"
+    },
+    {
+      "title": "They Don't Care About Us",
+      "artist": "Michael Jackson",
+      "spotifyUri": "spotify:track:3wuCCNCnBhJlwkIJTBZFiv",
+      "url": "https://p.scdn.co/mp3-preview/7e48f0a50a4b64aaa56e9dab7259670b1e6fc278"
+    },
+    {
+      "title": "Stand By Me",
+      "artist": "Ben E. King",
+      "spotifyUri": "spotify:track:7jmHyHMEqm9MJWiMAneF05",
+      "url": "https://p.scdn.co/mp3-preview/68bff7600dd930754e1cf9cb7fa6b10d04a5059f"
+    },
+    {
+      "title": "Levitating",
+      "artist": "Dua Lipa",
+      "spotifyUri": "spotify:track:39LLxExYz6ewLAcYrzQQyP",
+      "url": "https://p.scdn.co/mp3-preview/a0e86dd9b06f44569f6dc159a889579dc5b279ba"
+    },
+    {
+      "title": "Easy On Me",
+      "artist": "Adele",
+      "spotifyUri": "spotify:track:46IZ0fSY2mpAiktS3KOqds",
+      "url": "https://p.scdn.co/mp3-preview/a0cd8077c79a4aa3dcaa68bbc5ecdeda46e8d13f"
+    },
+    {
+      "title": "Beggin'",
+      "artist": "Måneskin",
+      "spotifyUri": "spotify:track:3Wrjm47oTz2sjIgck11l5e",
+      "url": "https://p.scdn.co/mp3-preview/39cd7cd4317a9e4c4fa1277a51eeadb2e300c7de"
+    },
+    {
+      "title": "You Are Not Alone",
+      "artist": "Michael Jackson",
+      "spotifyUri": "spotify:track:3AoeaZs8dFemFJr3JdzOL0",
+      "url": "https://p.scdn.co/mp3-preview/336f97e5f13c1cfd4c5c72373428d5b0b605d0f5"
+    },
+    {
+      "title": "Lose Control",
+      "artist": "Teddy Swims",
+      "spotifyUri": "spotify:track:17phhZDn6oGtzMe56NuWvj",
+      "url": "https://p.scdn.co/mp3-preview/6482502f44851d42e213a230baf0985decd898e6"
+    },
+    {
+      "title": "Mockingbird",
+      "artist": "Eminem",
+      "spotifyUri": "spotify:track:561jH07mF1jHuk7KlaeF0s",
+      "url": "https://p.scdn.co/mp3-preview/df646f1f847477015cb164b3f137b2b7375346d7"
+    },
+    {
+      "title": "Dandelions",
+      "artist": "Ruth B.",
+      "spotifyUri": "spotify:track:2eAvDnpXP5W0cVtiI0PUxV",
+      "url": "https://p.scdn.co/mp3-preview/c3743f9956a58ed7af85063003518bb51e5344ea"
+    },
+    {
+      "title": "Levitating (feat. DaBaby)",
+      "artist": "Dua Lipa, DaBaby",
+      "spotifyUri": "spotify:track:5nujrmhLynf4yMoMtj8AQF",
+      "url": "https://p.scdn.co/mp3-preview/bc2129fc0a1046f5bd77b150773b1217f2fd675c"
+    },
+    {
+      "title": "SNAP",
+      "artist": "Rosa Linn",
+      "spotifyUri": "spotify:track:5hx7w26Zi3zafMgvMTUqF6",
+      "url": "https://p.scdn.co/mp3-preview/dae85bb4c85c56d4e7e3d067f66c58b3f2419028"
+    },
+    {
+      "title": "Just the Two of Us",
+      "artist": "Grover Washington, Jr., Bill Withers",
+      "spotifyUri": "spotify:track:5fdNHVZHbWB1AaXk4RBGVD",
+      "url": "https://p.scdn.co/mp3-preview/67e9dd921a0f975c99cfa0292d4e02342dae5925"
+    },
+    {
+      "title": "Flowers",
+      "artist": "Miley Cyrus",
+      "spotifyUri": "spotify:track:7DSAEUvxU8FajXtRloy8M0",
+      "url": "https://p.scdn.co/mp3-preview/698a0cb24c5839039bf9485f58fe4a104647d1f0"
+    },
+    {
+      "title": "Stan",
+      "artist": "Eminem, Dido",
+      "spotifyUri": "spotify:track:3UmaczJpikHgJFyBTAJVoz",
+      "url": "https://p.scdn.co/mp3-preview/966406ecff01a973669e1457b17fdd7e7089d454"
+    },
+    {
+      "title": "Never Gonna Give You Up",
+      "artist": "Rick Astley",
+      "spotifyUri": "spotify:track:4PTG3Z6ehGkBFwjybzWkR8",
+      "url": "https://p.scdn.co/mp3-preview/b4c682084c3fd05538726d0a126b7e14b6e92c83"
+    },
+    {
+      "title": "All The Stars (with SZA) - From \"Black Panther: The Album\"",
+      "artist": "Kendrick Lamar, SZA",
+      "spotifyUri": "spotify:track:3GCdLUSnKSMJhs4Tj6CV3s",
+      "url": "https://p.scdn.co/mp3-preview/330c6d6e5bfcc1bc831b6948b57ce9c98e7558bf"
+    },
+    {
+      "title": "Killing Me Softly With His Song",
+      "artist": "Fugees, Ms. Lauryn Hill",
+      "spotifyUri": "spotify:track:0Q0IVlqMV64kNLlwjPj0Hl",
+      "url": "https://p.scdn.co/mp3-preview/7a931688bc452843a89fbd4d83fe2986a95c182e"
+    },
+    {
+      "title": "Come and Get Your Love - Single Version",
+      "artist": "Redbone",
+      "spotifyUri": "spotify:track:7GVUmCP00eSsqc4tzj1sDD",
+      "url": "https://p.scdn.co/mp3-preview/beb70a209af1e258ff3af3a01c92cc6a7295c7bb"
+    },
+    {
+      "title": "I WANNA BE YOUR SLAVE",
+      "artist": "Måneskin",
+      "spotifyUri": "spotify:track:4pt5fDVTg5GhEvEtlz9dKk",
+      "url": "https://p.scdn.co/mp3-preview/485950694eaee2c2887f897603a9bc4acc05c0bf"
+    },
+    {
+      "title": "Love In The Dark",
+      "artist": "Adele",
+      "spotifyUri": "spotify:track:0DuWDLjriRPjDRoPgaCslY",
+      "url": "https://p.scdn.co/mp3-preview/71fccaf81d5bd85928d35ac65e311709f841e4b6"
+    },
+    {
+      "title": "Unholy (feat. Kim Petras)",
+      "artist": "Sam Smith, Kim Petras",
+      "spotifyUri": "spotify:track:0NZPBYD5qbEWRs3PrGiRkT",
+      "url": "https://p.scdn.co/mp3-preview/19eee1dea8b5b4bdecb56a3b27306c72b889f3c7"
+    },
+    {
+      "title": "Dance Monkey",
+      "artist": "Tones And I",
+      "spotifyUri": "spotify:track:2N8m6CYs74qQO4mjVcXO30",
+      "url": "https://p.scdn.co/mp3-preview/39be80f9a4eb16d91bd436ae1fe6d048f20c8389"
+    },
+    {
+      "title": "Be Alright",
+      "artist": "Dean Lewis",
+      "spotifyUri": "spotify:track:5qrSlOut2rNAWv3ubArkNy",
+      "url": "https://p.scdn.co/mp3-preview/f6a555e84780714c22c0685e5c8866f4bb877a3d"
+    },
+    {
+      "title": "Old Town Road",
+      "artist": "Lil Nas X",
+      "spotifyUri": "spotify:track:0F7FA14euOIX8KcbEturGH",
+      "url": "https://p.scdn.co/mp3-preview/433e895f2d7df7ca5bae2561cf07effbe46a1a7a"
+    },
+    {
+      "title": "Peaches (feat. Daniel Caesar & Giveon)",
+      "artist": "Justin Bieber, Daniel Caesar, GIVĒON",
+      "spotifyUri": "spotify:track:4iJyoBOLtHqaGxP12qzhQI",
+      "url": "https://p.scdn.co/mp3-preview/cc4a3aa7b548792f4f37f4501303010985442876"
+    },
+    {
+      "title": "If the World Was Ending (feat. Julia Michaels)",
+      "artist": "JP Saxe, Julia Michaels",
+      "spotifyUri": "spotify:track:4bp5G6x1SXMQW4X9DbCCCp",
+      "url": "https://p.scdn.co/mp3-preview/cd54e9f3145a52c8f36b9b14f3b768a5e0570a19"
+    },
+    {
+      "title": "INDUSTRY BABY (feat. Jack Harlow)",
+      "artist": "Lil Nas X, Jack Harlow",
+      "spotifyUri": "spotify:track:5Z9KJZvQzH6PFmb8SNkxuk",
+      "url": "https://p.scdn.co/mp3-preview/72ea5bb437a5e3ceb2275a617d0aee9b2c9a53b2"
+    },
+    {
+      "title": "no tears left to cry",
+      "artist": "Ariana Grande",
+      "spotifyUri": "spotify:track:2qT1uLXPVPzGgFOx4jtEuo",
+      "url": "https://p.scdn.co/mp3-preview/e5b04ad7398a7c8f5c4c788f4ab43f3f4cef150a"
+    },
+    {
+      "title": "Paint The Town Red",
+      "artist": "Doja Cat",
+      "spotifyUri": "spotify:track:56y1jOTK0XSvJzVv9vHQBK",
+      "url": "https://p.scdn.co/mp3-preview/ec6bf4b6095acf08480c8048f546f94a427aec0d"
+    },
+    {
+      "title": "Hotline Bling",
+      "artist": "Drake",
+      "spotifyUri": "spotify:track:0wwPcA6wtMf6HUMpIRdeP7",
+      "url": "https://p.scdn.co/mp3-preview/2541ea8f31c87a3bda268b2b7a25bde73530e07d"
+    },
+    {
+      "title": "Man I Need",
+      "artist": "Olivia Dean",
+      "spotifyUri": "spotify:track:1qbmS6ep2hbBRaEZFpn7BX",
+      "url": "https://p.scdn.co/mp3-preview/0a36635f94b4e44e6e4f5b7edb3f501d458812d9"
+    },
+    {
+      "title": "Heartbreak Anniversary",
+      "artist": "GIVĒON",
+      "spotifyUri": "spotify:track:3FAJ6O0NOHQV8Mc5Ri6ENp",
+      "url": "https://p.scdn.co/mp3-preview/11e35f27f900e07a9dd7b459b1d70a05f1fa74af"
+    },
+    {
+      "title": "changes",
+      "artist": "XXXTENTACION",
+      "spotifyUri": "spotify:track:7AFASza1mXqntmGtbxXprO",
+      "url": "https://p.scdn.co/mp3-preview/dcff399531e4c033116802333fe599b2376ea155"
+    },
+    {
+      "title": "Supermarket Flowers",
+      "artist": "Ed Sheeran",
+      "spotifyUri": "spotify:track:4VuS959DSpr82t3qBqCrWG",
+      "url": "https://p.scdn.co/mp3-preview/c14560ec93e4c452a644e4ab00bbcfd98951a02e"
+    },
+    {
+      "title": "God's Plan",
+      "artist": "Drake",
+      "spotifyUri": "spotify:track:6DCZcSspjsKoFjzjrWoCdn",
+      "url": "https://p.scdn.co/mp3-preview/a90a7912992fdfd494c99027c31eb9002b592ed3"
+    },
+    {
+      "title": "Issues",
+      "artist": "Julia Michaels",
+      "spotifyUri": "spotify:track:7vu0JkJh0ldukEYbTVcqd0",
+      "url": "https://p.scdn.co/mp3-preview/280043158f1556321e6c41f1a7c154ed5b1f0d33"
+    },
+    {
+      "title": "Heal the World",
+      "artist": "Michael Jackson",
+      "spotifyUri": "spotify:track:7woW97CfcWaKtuC6W5BP2K",
+      "url": "https://p.scdn.co/mp3-preview/ce3d4b4b22b759f960e912a3ed62f33aeeeb8c2e"
+    },
+    {
+      "title": "These Days (feat. Jess Glynne, Macklemore & Dan Caplen)",
+      "artist": "Rudimental, Jess Glynne, Macklemore, Dan Caplen",
+      "spotifyUri": "spotify:track:20ZP3Om9DvDazXrNUC7WM2",
+      "url": "https://p.scdn.co/mp3-preview/f8c3593d17b615b5f33e78bc7b8102a036749c8a"
+    },
+    {
+      "title": "Intentions (feat. Quavo)",
+      "artist": "Justin Bieber, Quavo",
+      "spotifyUri": "spotify:track:4umIPjkehX1r7uhmGvXiSV",
+      "url": "https://p.scdn.co/mp3-preview/941f581cc1794e3a57aebf3de2c2dffb08b37f79"
+    },
+    {
+      "title": "Stuck with U (with Justin Bieber)",
+      "artist": "Ariana Grande, Justin Bieber",
+      "spotifyUri": "spotify:track:4HBZA5flZLE435QTztThqH",
+      "url": "https://p.scdn.co/mp3-preview/be00e21551094a08c0227c84b8d9c26047a329a4"
+    },
+    {
+      "title": "7 Years",
+      "artist": "Lukas Graham",
+      "spotifyUri": "spotify:track:5kqIPrATaCc2LqxVWzQGbk",
+      "url": "https://p.scdn.co/mp3-preview/9fa9d1f4ac0d0c32c1cd0e6ab8d64fefef55e81d"
+    },
+    {
+      "title": "Let Alone The One You Love",
+      "artist": "Olivia Dean",
+      "spotifyUri": "spotify:track:3Vd4fHzwS6pBS3muymjiDi",
+      "url": "https://p.scdn.co/mp3-preview/6dc84cefd61943771582071fd8c7bc7d068abd53"
+    },
+    {
+      "title": "I'll Be There",
+      "artist": "Jess Glynne",
+      "spotifyUri": "spotify:track:083Qf6hn6sFL6xiOHlZUyn",
+      "url": "https://p.scdn.co/mp3-preview/378bc86735eb8f67309424d92793fa8637abdc37"
+    },
+    {
+      "title": "luther (with sza)",
+      "artist": "Kendrick Lamar, SZA",
+      "spotifyUri": "spotify:track:45J4avUb9Ni0bnETYaYFVJ",
+      "url": "https://p.scdn.co/mp3-preview/c6d666859a2d93c82baf4b0e52c79d4481a6ac6b"
+    },
+    {
+      "title": "Let Her Go (feat. Ed Sheeran) - Anniversary Edition",
+      "artist": "Passenger, Ed Sheeran",
+      "spotifyUri": "spotify:track:1nHKI4L5pWrN5CUvW07nHP",
+      "url": "https://p.scdn.co/mp3-preview/2b91deebffa3154ae4a8d8447923bccce188a41c"
+    },
+    {
+      "title": "La fille du sud",
+      "artist": "Vianney",
+      "spotifyUri": "spotify:track:52MpEovOP5JFkgcYXZlsYm",
+      "url": "https://p.scdn.co/mp3-preview/570161e255b85bbba4173ce0a0474c36800d59ce"
+    },
+    {
+      "title": "Dumbo",
+      "artist": "Vianney",
+      "spotifyUri": "spotify:track:1rv2GsrtNqhDhRzokBeCnS",
+      "url": "https://p.scdn.co/mp3-preview/ff1cbe8d5e8e01e590795fa25d8883daad00d035"
+    },
+    {
+      "title": "Parce que c'est toi",
+      "artist": "Vianney, Mentissa",
+      "spotifyUri": "spotify:track:5TlcTSQHEQoa70KIWgV2ZR",
+      "url": "https://p.scdn.co/mp3-preview/8fc06f1478276870b9c6f45fbcec7fa21ee7d40a"
+    },
+    {
+      "title": "Moi aimer toi",
+      "artist": "Vianney",
+      "spotifyUri": "spotify:track:1qqceUwmiSLrjkPxg9OLm8",
+      "url": "https://p.scdn.co/mp3-preview/fd0e472adb372f79a8482b16dddb4ba28b953c1e"
+    },
+    {
+      "title": "S'il suffisait d'aimer",
+      "artist": "Céline Dion",
+      "spotifyUri": "spotify:track:5QsVz6hMVGPia0NOMQ8wOS",
+      "url": "https://p.scdn.co/mp3-preview/d313ce620c7801665f6c613f5ad6e64bb42118c4"
+    },
+    {
+      "title": "Heaven Is A Place On Earth",
+      "artist": "Belinda Carlisle",
+      "spotifyUri": "spotify:track:37Q5anxoGWYdRsyeXkkNoI",
+      "url": "https://p.scdn.co/mp3-preview/b43b68444ab917902528fd8e591fabbed3a7058a"
+    },
+    {
+      "title": "Kiss of Life",
+      "artist": "Sade",
+      "spotifyUri": "spotify:track:65krtHkaYLPr0mEbjL61UP",
+      "url": "https://p.scdn.co/mp3-preview/4a7cb31217e4104d4d361621abb4f0318cc59d44"
+    },
+    {
+      "title": "Helplessly",
+      "artist": "Tatiana Manaois",
+      "spotifyUri": "spotify:track:1pvGWSvIXr8PTk8nC4SnXK",
+      "url": "https://p.scdn.co/mp3-preview/5f9ddd4bd7ead1afbe1f0a01986bf1493341e162"
+    },
+    {
+      "title": "Video Games",
+      "artist": "Lana Del Rey",
+      "spotifyUri": "spotify:track:0fBSs3fRoh1yJcne77fdu9",
+      "url": "https://p.scdn.co/mp3-preview/d4684aa0723ea42273d74ec32977ef259fca9243"
+    },
+    {
+      "title": "Summertime Sadness",
+      "artist": "Lana Del Rey",
+      "spotifyUri": "spotify:track:3BJe4B8zGnqEdQPMvfVjuS",
+      "url": "https://p.scdn.co/mp3-preview/4634bc7ad33018997a83c20d4fbc34c980205a05"
+    },
+    {
+      "title": "Love Me JeJe",
+      "artist": "Tems",
+      "spotifyUri": "spotify:track:47hsUYxvbTlBAN3sP9dEOd",
+      "url": "https://p.scdn.co/mp3-preview/e265dc92d3de0aacac1c5149c53985f054f08062"
+    },
+    {
+      "title": "Coucou",
+      "artist": "Charlotte Dipanda",
+      "spotifyUri": "spotify:track:69rBY2orSK1dD1BCYlQSFT",
+      "url": "https://p.scdn.co/mp3-preview/bacb56c00c7a68388a450139af3e82b8a5100a29"
+    },
+    {
+      "title": "White Flag",
+      "artist": "Dido",
+      "spotifyUri": "spotify:track:6si71supnBUhddjR2FJc2L",
+      "url": "https://p.scdn.co/mp3-preview/b23a1ce04f41a051feee84933d3be8263c5b60ca"
+    }
+  ]
+}
