@@ -1,36 +1,42 @@
 const app=document.querySelector('#app');
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const stored=(key,storage=sessionStorage)=>{try{return JSON.parse(storage.getItem(key)||'null');}catch{return null;}};
-let session=stored('encore-session'),state,events,view='create',selection={},bonusSelection=null,lastRound='',offset=0,connected=false,volume=.35,ctx,nodes=[],audio,preloadId='',playKey='',clipTimer,stallTimer,loadTask=0,importing=false,formDraft='',playlistDraft='',manualOpen=false;
+let session=stored('encore-session'),state,events,view='create',selection={},bonusSelection=null,lastRound='',offset=0,connected=false,volume=.35,ctx,nodes=[],audio,player,primed=false,needsTap=false,audioListeners,preloadId='',playKey='',clipTimer,stallTimer,loadTask=0,importing=false,formDraft='',playlistDraft='',manualOpen=false;
 const invite=new URLSearchParams(location.search).get('room');if(invite&&session?.code!==invite.toUpperCase())session=null;
 function toast(t){const el=document.querySelector('#toast');el.textContent=t;el.style.display='block';clearTimeout(toast.timer);toast.timer=setTimeout(()=>el.style.display='none',5000);}
 async function api(action,data={}){const res=await fetch('/api/'+action,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...session,...data})});const body=await res.json();if(!res.ok)throw Error(body.error);return body;}
 function saveSession(){sessionStorage.setItem('encore-session',JSON.stringify(session));localStorage.setItem('encore-last-session',JSON.stringify(session));}
 function stopSound(){clearTimeout(clipTimer);clearTimeout(stallTimer);for(const node of nodes){try{node.stop();}catch{}}nodes=[];audio?.pause();}
-function resetAudio(){stopSound();loadTask++;if(audio){audio.removeAttribute('src');audio.load();audio=null;}preloadId='';playKey='';}
-async function unlock(){ctx??=new(window.AudioContext||window.webkitAudioContext)();await ctx.resume();}
+function resetAudio(){stopSound();loadTask++;audioListeners?.abort();needsTap=false;if(audio){audio.removeAttribute('src');audio.load();audio=null;}preloadId='';playKey='';}
+// Un seul lecteur, débloqué pendant un geste de l'utilisateur : les navigateurs mobiles refusent sinon de lancer l'extrait tout seul.
+function mediaPlayer(){if(!player){player=new Audio();player.preload='auto';}return player;}
+function silence(){const n=800,b=new DataView(new ArrayBuffer(44+n*2)),w=(o,s)=>[...s].forEach((c,i)=>b.setUint8(o+i,c.charCodeAt(0)));w(0,'RIFF');b.setUint32(4,36+n*2,true);w(8,'WAVE');w(12,'fmt ');b.setUint32(16,16,true);b.setUint16(20,1,true);b.setUint16(22,1,true);b.setUint32(24,8000,true);b.setUint32(28,16000,true);b.setUint16(32,2,true);b.setUint16(34,16,true);w(36,'data');b.setUint32(40,n*2,true);return URL.createObjectURL(new Blob([b],{type:'audio/wav'}));}
+async function unlock(){if(!primed&&!audio){const p=mediaPlayer();primed=true;p.src=silence();p.play().then(()=>{if(!audio)p.pause();},()=>{primed=false;});}ctx??=new(window.AudioContext||window.webkitAudioContext)();await ctx.resume();}
 function notesPlay(notes,length,seek=0){stopSound();if(ctx?.state!=='running')throw Error('Active le son pour entendre la manche.');const start=ctx.currentTime;for(let i=0;i<length/.32;i++){const osc=ctx.createOscillator(),gain=ctx.createGain();osc.type='triangle';osc.frequency.value=notes[(i+Math.floor(seek/.32))%notes.length];gain.gain.setValueAtTime(0,start+i*.32);gain.gain.linearRampToValueAtTime(Math.max(.0001,volume*.35),start+i*.32+.015);gain.gain.exponentialRampToValueAtTime(.0001,start+i*.32+.29);osc.connect(gain);gain.connect(ctx.destination);osc.start(start+i*.32);osc.stop(start+i*.32+.3);nodes.push(osc);}}
 async function audioFailure(id,message){if(state?.round?.id!==id||!['loading','countdown','playing'].includes(state.phase))return;stopSound();toast(message);try{await api('audio-error',{roundId:id});}catch{}}
 async function preload(){
   const r=state?.round;if(!r||!r.canAnswer||preloadId===r.id||!['loading','countdown','playing'].includes(state.phase))return;
   resetAudio();preloadId=r.id;const generation=loadTask;
   if(r.audio.notes){if(state.phase==='loading'){if(ctx?.state==='running')await api('audio-ready',{roundId:r.id,ok:true});else{preloadId='';toast('Clique sur « Activer le son » pour rejoindre la manche.');}}return;}
-  const player=new Audio();audio=player;player.preload='auto';player.volume=volume;
-  player.addEventListener('error',()=>{if(loadTask===generation)audioFailure(r.id,'Extrait indisponible : la manche sera annulée.');});
-  player.addEventListener('waiting',()=>{clearTimeout(stallTimer);if(state?.phase==='playing')stallTimer=setTimeout(()=>audioFailure(r.id,'La lecture reste bloquée : manche annulée.'),8000);});
-  player.addEventListener('playing',()=>clearTimeout(stallTimer));
-  player.addEventListener('canplay',async()=>{if(loadTask!==generation)return;if(state?.phase==='loading')try{await api('audio-ready',{roundId:r.id,ok:true});}catch(err){toast(err.message);}},{once:true});
-  player.src=r.audio.url;player.load();
+  const p=mediaPlayer();audio=p;p.volume=volume;audioListeners=new AbortController();const signal=audioListeners.signal;
+  p.addEventListener('error',()=>{if(loadTask===generation)audioFailure(r.id,'Extrait indisponible : la manche sera annulée.');},{signal});
+  p.addEventListener('waiting',()=>{clearTimeout(stallTimer);if(state?.phase==='playing')stallTimer=setTimeout(()=>audioFailure(r.id,'La lecture reste bloquée : manche annulée.'),8000);},{signal});
+  p.addEventListener('playing',()=>clearTimeout(stallTimer),{signal});
+  p.addEventListener('canplay',async()=>{if(loadTask!==generation)return;if(state?.phase==='loading')try{await api('audio-ready',{roundId:r.id,ok:true});}catch(err){toast(err.message);}},{once:true,signal});
+  p.src=r.audio.url;p.load();
 }
 async function playClip(r,key,length,seek){
   if(playKey===key)return;playKey=key;
   try{
     if(r.audio.notes){notesPlay(r.audio.notes,length,seek);return;}
     if(!audio){playKey='';await preload();return;}
-    stopSound();const current=audio;current.currentTime=Math.max(0,seek);await current.play();
+    stopSound();const current=audio;current.currentTime=Math.max(0,seek);await current.play();primed=true;
     if(state?.round?.id!==r.id||audio!==current||state.phase!=='playing'){current.pause();return;}
     clipTimer=setTimeout(()=>current.pause(),Math.max(0,length)*1000);
-  }catch(err){if(err.name==='AbortError')return;await audioFailure(r.id,err.name==='NotAllowedError'?'Lecture bloquée : active le son avant la prochaine manche.':'Impossible de lire cet extrait.');}
+  }catch(err){if(err.name==='AbortError')return;
+    // Blocage du navigateur : problème local, on attend un toucher au lieu d'annuler la manche pour tout le monde.
+    if(err.name==='NotAllowedError'){needsTap=true;toast('Touche l’écran pour entendre l’extrait.');return;}
+    await audioFailure(r.id,'Impossible de lire cet extrait.');}
 }
 function header(label,title){return `<div class="topline"><div><div class="eyebrow">${label}</div><h1>${title}</h1></div><div class="row"><span class="code">${esc(state.code)}</span><button class="btn" data-action="share">Copier le lien ↗</button><button class="back" data-action="exit">Quitter</button></div></div>`;}
 function playerList(scores=false){return [...state.players].filter(p=>!p.left||scores).sort((a,b)=>scores?b.score-a.score:0).map((p,i)=>`<div class="player"><div class="avatar">${scores?i+1:esc(p.name.slice(0,1).toUpperCase())}</div><div class="info">${esc(p.name)}<small>${p.id===state.me?'Toi · ':''}${p.id===state.host?'Créateur · ':''}${state.settings.teams?(p.team==='lime'?'Citron · ':'Violet · '):''}${p.online?'En ligne':'Absent'}</small></div>${scores?`<span class="score">${p.score}</span>`:`<span class="status ${p.ready?'ready':''}">${p.ready?'✓ Prêt':'En préparation'}</span>`}${!scores&&state.host===state.me&&p.id!==state.me&&p.online?`<button class="back" data-transfer="${p.id}" title="Transférer le rôle de créateur">♔</button>`:''}</div>`).join('');}
@@ -70,6 +76,7 @@ function tick(){const r=state?.round;if(!r||!['countdown','playing'].includes(st
   else playClip(r,r.id,Math.max(0,r.endsAt-now)/1000,Math.max(0,elapsed));
 }
 setInterval(tick,100);
+document.addEventListener('pointerdown',()=>{if(!needsTap)return;needsTap=false;playKey='';tick();ctx?.resume().catch(()=>{});},true);
 async function importPlaylist(data){if(importing)return;importing=true;render();try{const result=await api('playlist',data);playlistDraft='';toast(`${result.name} : ${result.available}/${result.exposed} extraits importés.`);}finally{importing=false;render();}}
 document.addEventListener('click',async e=>{
   const b=e.target.closest('button');if(!b)return;
