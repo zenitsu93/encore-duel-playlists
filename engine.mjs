@@ -4,7 +4,7 @@ export const reactions=['😂','🔥','👏','😭','Je la connaissais !'];
 export function createRoom(code){return {code,phase:'lobby',players:[],clients:new Map(),tracks:DEMO.map(t=>({...t,owners:[]})),playlists:[],settings:{...defaults},history:[],reactions:[],touched:Date.now()};}
 export function addPlayer(r,name){const p={id:token(),token:token(),name,score:0,ready:false,team:r.players.length%2?'purple':'lime',jokers:{fifty:false,time:false},offlineAt:null};r.players.push(p);r.host??=p.id;return p;}
 export function online(r,p){return [...r.clients.values()].some(c=>c.playerId===p.id);}
-export function teamScores(r){return ['lime','purple'].map(id=>({id,name:id==='lime'?'Équipe Citron':'Équipe Violet',score:r.players.filter(p=>p.team===id).reduce((s,p)=>s+p.score,0)}));}
+export function teamScores(r){return ['lime','purple'].map(id=>({id,name:id==='lime'?'Équipe Or':'Équipe Ciel',score:r.players.filter(p=>p.team===id).reduce((s,p)=>s+p.score,0)}));}
 export function publicState(r,p){
   const q=r.round,revealed=['reveal','finished'].includes(r.phase),answer=q?.answers[p.id];
   return {code:r.code,phase:r.phase,host:r.host,me:p.id,settings:r.settings,serverNow:Date.now(),

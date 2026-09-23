@@ -2,6 +2,7 @@
   "name": "duel-playlists",
   "version": "1.0.0",
   "private": true,
+  "author": "Christian BADOLO",
   "type": "module",
   "scripts": { "start": "node server.mjs", "test": "node test/game.test.mjs", "test:integration": "node test/integration.mjs" },
   "engines": { "node": ">=20" }
