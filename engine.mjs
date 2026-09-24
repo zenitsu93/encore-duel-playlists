@@ -15,7 +15,7 @@ export function publicState(r,p){
   return {code:r.code,phase:r.phase,host:r.host,me:p.id,settings:r.settings,serverNow:Date.now(),
     avatars:AVATARS,players:r.players.map(x=>({id:x.id,name:x.name,avatar:x.avatar,score:x.score,ready:x.ready,team:x.team,left:!!x.left,online:online(r,x),answered:!!q?.answers[x.id]})),
     teams:teamScores(r),jokers:p.jokers,playlists:r.playlists,saved:SAVED,reactions:r.reactions,
-    tracks:r.phase==='lobby'?r.tracks.map(({id,title,artist,demo,owners})=>({id,title,artist,demo,owners})):[],
+    tracks:r.phase==='lobby'?r.tracks.map(({id,title,artist,demo,owners,curator})=>({id,title,artist,demo,owners,curator})):[],
     history:r.phase==='finished'?r.history.map(h=>({...h,results:h.results.filter(x=>x.id===p.id)})):[],
     round:q?{id:q.id,number:Math.min(r.index+1,r.deck.length),total:r.deck.length,startsAt:q.startsAt,endsAt:q.endsAt,deadline:q.endsAt+(q.extra[p.id]||0),
       audio:q.track.demo?{notes:q.track.notes}:{url:q.track.url},stage:r.settings.listening==='progressive'?[{at:0,length:2},{at:7,length:5},{at:17,length:10}]:null,
