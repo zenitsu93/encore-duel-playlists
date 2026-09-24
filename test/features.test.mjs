@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {DEMO,matchesAnswer,mergeTracks,balancedDeck} from '../game.mjs';
-import {createRoom,addPlayer,start,readyAudio,answer,joker,reveal,publicState,transferHost,disconnected,teamScores} from '../engine.mjs';
+import {createRoom,addPlayer,start,readyAudio,answer,joker,reveal,publicState,transferHost,disconnected,teamScores,setAvatar,AVATARS} from '../engine.mjs';
 import {parseSpotifyPage} from '../spotify-import.mjs';
 function fixture(t,settings={}){
   const r=createRoom('TEST42'),a=addPlayer(r,'Alice'),b=addPlayer(r,'Bob');
@@ -9,6 +9,15 @@ function fixture(t,settings={}){
   Object.assign(r.settings,settings);t.after(()=>{clearTimeout(r.timer);r.players.forEach(p=>clearTimeout(p.disconnectTimer));});return {r,a,b};
 }
 function playing(r){clearTimeout(r.timer);r.phase='playing';r.round.startsAt=Date.now()-1000;r.round.endsAt=Date.now()+19000;}
+test('avatars : distincts à l’arrivée, modifiables, jamais en double',t=>{
+  const {r,a,b}=fixture(t);
+  const others=Array.from({length:10},(_,i)=>addPlayer(r,'J'+i)),all=[a,b,...others];
+  assert.equal(new Set(all.map(p=>p.avatar)).size,12);assert(all.every(p=>AVATARS.includes(p.avatar)));
+  const free=AVATARS.find(x=>!all.some(p=>p.avatar===x));setAvatar(r,a,free);assert.equal(a.avatar,free);
+  assert.throws(()=>setAvatar(r,a,b.avatar),/déjà pris/);assert.throws(()=>setAvatar(r,a,'<b>'),/inconnu/);
+  b.left=true;setAvatar(r,a,b.avatar);assert.equal(a.avatar,b.avatar,'l’avatar d’un joueur parti se libère');
+  assert.equal(publicState(r,a).players.find(p=>p.id===a.id).avatar,a.avatar);
+});
 test('réponse libre : accents, ponctuation et fautes limitées, pas de fragments',()=>{
   assert(matchesAnswer('ED SHEERAN','Ed Sheeran'));assert(matchesAnswer('ete!','Été'));assert(matchesAnswer('Photograh','Photograph'));assert(!matchesAnswer('Ed','Ed Sheeran'));assert(!matchesAnswer('Mer','Mère'));assert(!matchesAnswer('','Perfect'));
 });

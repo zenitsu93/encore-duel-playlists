@@ -15,6 +15,7 @@ Créer un salon et partager son code avec un autre navigateur ou une fenêtre pr
 ## Fonctionnalités
 
 - Salons privés de 2 à 12 joueurs, sans compte, prêts individuels et créateur participant.
+- Avatars à choisir dans le salon (18 au choix, un par joueur), affichés dans le classement et sur le podium.
 - Import par lien Spotify public : métadonnées et URLs d’extraits exposées dans la page embed. Timeout de 20 secondes, cache de 5 minutes, validation du domaine et absence de redirection. Cinq sélections sauvegardées prêtes à jouer : Karaoke 🔥, Variét’ FR 🎤, King of Pop 👑, Love Songs 🌸 et Faso Vibes 🇧🇫 (liste dans `playlists.mjs`, instantanés dans `public/playlists/`).
 - Import manuel `Artiste | Titre | URL audio`, maximum 100 morceaux par import et 1 000 morceaux distincts par salon. Le premier import remplace la démo.
 - Déduplication artiste/titre avec conservation des contributeurs ; tirage équilibré à tour de rôle parmi leurs sélections disponibles, ou tirage aléatoire global.
