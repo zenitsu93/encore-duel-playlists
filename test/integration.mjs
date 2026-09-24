@@ -65,5 +65,9 @@ try{
   await until(()=>state?.phase==='loading');
   await api('audio-error',{...a,roundId:state.round.id});
   await until(()=>state?.phase==='reveal');assert(state.round.canceled);assert(state.players.every(p=>p.score===0));
-  console.log('OK : deux joueurs, QCM, réponse écrite progressive, équipes, bonus, joker, annulation audio, scores, récap, réaction, revanche et transfert de rôle.');
+  const c=(await api('create',{name:'Chloé test'})).body;
+  assert(state.saved.length>=5,'sélections sauvegardées proposées');
+  for(const s of state.saved)assert.equal((await api('playlist',{...c,saved:s.id})).status,200,`sélection ${s.id} importable`);
+  assert.equal((await api('playlist',{...c,saved:'../package'})).status,400,'sélection inconnue refusée');
+  console.log('OK : deux joueurs, QCM, réponse écrite progressive, équipes, bonus, joker, annulation audio, scores, récap, réaction, revanche, transfert de rôle et sélections sauvegardées.');
 }finally{controller.abort();secondController.abort();await Promise.all([consume,secondConsume]);}

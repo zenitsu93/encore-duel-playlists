@@ -1,5 +1,6 @@
 .help-link{font-size:12px;font-weight:600;color:var(--sky);text-decoration:none}.help-link:hover{color:var(--sky-hi)}
 .playlist-form{padding:16px;background:var(--bg-2);border:1px solid var(--line-soft);border-radius:12px}.playlist-form .field{margin-bottom:12px}
+.saved-head{font-size:12px;font-weight:500;color:var(--soft);margin:18px 0 10px}.saved-list{display:flex;flex-wrap:wrap;gap:8px}.btn.saved{padding:10px 14px;font-size:12px}.btn.saved.added{border-color:var(--sky);color:var(--sky-hi);background:#6cabdd1f}
 .playlist-list{display:grid;gap:8px}.playlist-chip{border:1px solid var(--line);border-left:3px solid var(--sky);padding:12px;border-radius:8px}.playlist-chip strong,.playlist-chip small{display:block}.playlist-chip strong{font-size:13px}.playlist-chip small{font-size:11px;color:var(--muted);margin-top:5px}
 .toggles{display:grid;gap:12px}.toggles+.hint{margin-top:14px}.toggle{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--soft)}.toggle input{accent-color:var(--sky);width:16px;height:16px}
 .team-scores{display:flex;gap:10px;margin-bottom:20px}
