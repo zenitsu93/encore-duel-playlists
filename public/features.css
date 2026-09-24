@@ -11,6 +11,12 @@
 .avatar{font-size:20px;position:relative}.avatar b{position:absolute;right:-6px;bottom:-6px;min-width:18px;height:18px;padding:0 4px;border-radius:9px;background:var(--gold);color:var(--sky-ink);font:800 11px/18px var(--display);text-align:center}
 .avatar:has(img){background:var(--panel-2);padding:2px;height:42px;width:42px}
 .podium .crown{font-size:56px;display:flex;justify-content:center;gap:12px;animation:rise .6s both}.podium .crown img{width:104px;height:104px;border-radius:26px;background:var(--panel-2);border:3px solid var(--gold);box-shadow:0 12px 30px -10px #f2c74480}
+/* Liste de morceaux : barre fine aux couleurs du thème, fondu en haut et en bas, survol des lignes. */
+.scroll{max-height:340px;padding-right:10px;margin-right:-4px;scrollbar-width:thin;scrollbar-color:var(--sky) transparent;-webkit-mask-image:linear-gradient(transparent,#000 14px,#000 calc(100% - 22px),transparent);mask-image:linear-gradient(transparent,#000 14px,#000 calc(100% - 22px),transparent);overscroll-behavior:contain}
+.scroll::-webkit-scrollbar{width:6px}.scroll::-webkit-scrollbar-track{background:#ffffff0a;border-radius:6px;margin:10px 0}
+.scroll::-webkit-scrollbar-thumb{background:linear-gradient(var(--sky-hi),var(--sky));border-radius:6px}.scroll::-webkit-scrollbar-thumb:hover{background:var(--gold)}
+.scroll .track{border-radius:8px;padding-left:8px;padding-right:8px;transition:background .15s}.scroll .track:hover{background:#6cabdd12}
+.scroll .track:first-child{border-top:0;margin-top:8px}.scroll .track:last-child{margin-bottom:14px}
 .btn.wide+.hint{margin-top:12px}.toggles{display:grid;gap:12px}.toggles+.hint{margin-top:14px}.toggle{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--soft)}.toggle input{accent-color:var(--sky);width:16px;height:16px}
 .team-scores{display:flex;gap:10px;margin-bottom:20px}
 .team{flex:1;border-radius:10px;padding:12px;background:#f2c7441f;border:1px solid #f2c74440;color:var(--gold)}.team.purple{background:#6cabdd1f;border-color:#6cabdd40;color:var(--sky-hi)}
