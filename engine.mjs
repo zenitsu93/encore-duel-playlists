@@ -3,7 +3,8 @@ import {SAVED} from './playlists.mjs';
 export const defaults={mode:'both',rounds:8,seconds:20,input:'qcm',listening:'classic',balanced:true,bonus:true,teams:false,jokers:true};
 export const reactions=['😂','🔥','👏','😭','Je la connaissais !'];
 export function createRoom(code){return {code,phase:'lobby',players:[],clients:new Map(),tracks:DEMO.map(t=>({...t,owners:[]})),playlists:[],settings:{...defaults},history:[],reactions:[],touched:Date.now()};}
-export const AVATARS=['🦁','🐯','🦊','🐼','🐸','🐙','🦄','🐵','🐧','🦉','🐨','🐰','🦖','🐝','👽','🤖','🎸','🎧'];
+// Avatars « Big Smile » (Ashley Seo, CC BY 4.0, via DiceBear), servis depuis public/avatars/<id>.svg.
+export const AVATARS=['zoe','kofi','aya','omar','awa','mariam','yann','chloe','ines','sami','fatou','theo','moussa','rose','idriss','emma','mila','sara'];
 const takenAvatars=(r,except)=>r.players.filter(x=>!x.left&&x!==except).map(x=>x.avatar);
 export function addPlayer(r,name){const free=AVATARS.filter(a=>!takenAvatars(r).includes(a)),p={id:token(),token:token(),name,avatar:shuffle(free)[0]||AVATARS[0],score:0,ready:false,team:r.players.length%2?'purple':'lime',jokers:{fifty:false,time:false},offlineAt:null};r.players.push(p);r.host??=p.id;return p;}
 export function setAvatar(r,p,avatar){if(!AVATARS.includes(avatar))fail('Avatar inconnu.');if(takenAvatars(r,p).includes(avatar))fail('Cet avatar est déjà pris.');p.avatar=avatar;}
