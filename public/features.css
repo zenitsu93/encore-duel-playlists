@@ -2,7 +2,7 @@
 .playlist-form{padding:16px;background:var(--bg-2);border:1px solid var(--line-soft);border-radius:12px}.playlist-form .field{margin-bottom:12px}
 .saved-head{font-size:12px;font-weight:500;color:var(--soft);margin:18px 0 10px}.saved-list{display:flex;flex-wrap:wrap;gap:8px}.btn.saved{padding:10px 14px;font-size:12px}.btn.saved.added{border-color:var(--sky);color:var(--sky-hi);background:#6cabdd1f}
 .playlist-list{display:grid;gap:8px}.playlist-chip{border:1px solid var(--line);border-left:3px solid var(--sky);padding:12px;border-radius:8px}.playlist-chip strong,.playlist-chip small{display:block}.playlist-chip strong{font-size:13px}.playlist-chip small{font-size:11px;color:var(--muted);margin-top:5px}
-.toggles{display:grid;gap:12px}.toggles+.hint{margin-top:14px}.toggle{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--soft)}.toggle input{accent-color:var(--sky);width:16px;height:16px}
+.btn.wide+.hint{margin-top:12px}.toggles{display:grid;gap:12px}.toggles+.hint{margin-top:14px}.toggle{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--soft)}.toggle input{accent-color:var(--sky);width:16px;height:16px}
 .team-scores{display:flex;gap:10px;margin-bottom:20px}
 .team{flex:1;border-radius:10px;padding:12px;background:#f2c7441f;border:1px solid #f2c74440;color:var(--gold)}.team.purple{background:#6cabdd1f;border-color:#6cabdd40;color:var(--sky-hi)}
 .team small,.team strong{display:block}.team small{font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase}.team strong{font:800 32px/1 var(--display);margin-top:8px}
@@ -21,4 +21,4 @@
 @media(max-width:600px){.summary-metrics{grid-template-columns:1fr}.guide .guide-grid{grid-template-columns:1fr}.guide h1{font-size:50px}.nav-links{gap:10px}.nav-links .live{display:none}}
 
 /* Mobile : en-tête compact, titre qui se coupe proprement, réponses QCM sur deux colonnes pour tout voir sans défiler. */
-@media(max-width:600px){header{height:64px;padding:0 20px}.live{white-space:nowrap;font-size:13px}main{padding-top:24px}.hero h1{font-size:56px}.topline{margin-bottom:18px;gap:12px}.visualizer{margin:10px auto}.play-panel .progress{margin-bottom:14px}.question-label{margin:16px 0 10px;font-size:19px}.answers{gap:8px}.answer{padding:10px;gap:8px;min-height:52px;font-size:12px;overflow-wrap:anywhere}.answer span{min-width:22px;height:22px}.countdown{font-size:90px}}
+@media(max-width:600px){input,select,textarea{font-size:16px!important}header{height:64px;padding:0 20px}.live{white-space:nowrap;font-size:13px}main{padding-top:24px}.hero h1{font-size:56px}.topline{margin-bottom:18px;gap:12px}.visualizer{margin:10px auto}.play-panel .progress{margin-bottom:14px}.question-label{margin:16px 0 10px;font-size:19px}.answers{gap:8px}.answer{padding:10px;gap:8px;min-height:52px;font-size:12px;overflow-wrap:anywhere}.answer span{min-width:22px;height:22px}.countdown{font-size:90px}}
