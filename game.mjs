@@ -40,7 +40,7 @@ export function matchesAnswer(value,expected){
   return row[b.length]<=limit;
 }
 export function mergeTracks(tracks){
-  const map=new Map();for(const t of tracks){const key=normalize(t.artist)+'|'+normalize(t.title),old=map.get(key);map.set(key,old?{...old,owners:[...new Set([...(old.owners||[]),...(t.owners||[])])]}:{...t,owners:t.owners||[]});}return [...map.values()];
+  const map=new Map();for(const t of tracks){const key=normalize(t.artist)+'|'+normalize(t.title),old=map.get(key);map.set(key,old?{...old,owners:[...new Set([...(old.owners||[]),...(t.owners||[])])],...((old.from||t.from)&&{from:[...new Set([...(old.from||[]),...(t.from||[])])]})}:{...t,owners:t.owners||[]});}return [...map.values()];
 }
 export function balancedDeck(tracks,count,balanced=true){
   if(!balanced)return shuffle(tracks).slice(0,count);

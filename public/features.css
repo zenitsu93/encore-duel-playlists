@@ -1,6 +1,6 @@
 .help-link{font-size:12px;font-weight:600;color:var(--sky);text-decoration:none}.help-link:hover{color:var(--sky-hi)}
 .playlist-form{padding:16px;background:var(--bg-2);border:1px solid var(--line-soft);border-radius:12px}.playlist-form .field{margin-bottom:12px}
-.saved-head{font-size:12px;font-weight:500;color:var(--soft);margin:18px 0 10px}.saved-list{display:flex;flex-wrap:wrap;gap:8px}.btn.saved{padding:10px 14px;font-size:12px}.btn.saved.added{border-color:var(--sky);color:var(--sky-hi);background:#6cabdd1f}
+.saved-head{font-size:12px;font-weight:500;color:var(--soft);margin:18px 0 10px}.saved-list{display:flex;flex-wrap:wrap;gap:8px}.btn.saved{padding:10px 14px;font-size:12px}.btn.saved.added{border-color:var(--sky);color:var(--sky-hi);background:#6cabdd1f}.btn.saved.added:hover:not(:disabled){border-color:var(--rose);color:#f6b3bd;background:#e5566b1f}
 .playlist-list{display:grid;gap:8px}.playlist-chip{border:1px solid var(--line);border-left:3px solid var(--sky);padding:12px;border-radius:8px}.playlist-chip strong,.playlist-chip small{display:block}.playlist-chip strong{font-size:13px}.playlist-chip small{font-size:11px;color:var(--muted);margin-top:5px}
 .avatar-picker .saved-head{margin-top:4px}.avatar-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px}
 .avatar-choice{aspect-ratio:1;border:1px solid var(--line);border-radius:12px;background:var(--panel-2);line-height:1;padding:3px;display:grid;place-items:center;overflow:hidden;transition:transform .15s,border-color .15s,background .15s}

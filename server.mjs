@@ -5,7 +5,7 @@ import {randomInt} from 'node:crypto';
 import {DEMO,token} from './game.mjs';
 import {importSpotify} from './spotify-import.mjs';
 import {SAVED} from './playlists.mjs';
-import {createRoom,addPlayer,online,publicState,broadcast,readyAudio,addTracks,start,answer,joker,transferHost,disconnected,reactions,setAvatar,AVATARS} from './engine.mjs';
+import {createRoom,addPlayer,online,publicState,broadcast,readyAudio,addTracks,start,answer,joker,transferHost,disconnected,reactions,setAvatar,AVATARS,removePlaylist} from './engine.mjs';
 const rooms=new Map(),port=Number(process.env.PORT||4317);
 const fail=m=>{throw Error(m)};
 const member=(r,key)=>r.players.find(p=>p.token===key&&!p.left)||fail('Session expirée. Rejoins le salon.');
@@ -52,6 +52,7 @@ const server=http.createServer(async(req,res)=>{
         r.settings={mode:s.mode,input:s.input,listening:s.listening,rounds:Math.max(1,Math.min(30,Math.floor(Number(s.rounds)||8))),seconds:Math.max(10,Math.min(30,Math.floor(Number(s.seconds)||20))),balanced:!!s.balanced,bonus:!!s.bonus,teams:!!s.teams,jokers:!!s.jokers};r.players.forEach(p=>p.ready=false);
       }else if(action==='ready'){lobby();p.ready=!!b.ready;}
       else if(action==='avatar'){lobby();setAvatar(r,p,b.avatar);}
+      else if(action==='playlist-remove'){lobby();if(p.importing)fail('Un import est déjà en cours.');removePlaylist(r,p,b.playlistId);}
       else if(action==='team'){lobby();if(!['lime','purple'].includes(b.team))fail('Équipe inconnue.');p.team=b.team;p.ready=false;}
       else if(action==='transfer'){host();const target=r.players.find(x=>x.id===b.playerId&&!x.left&&online(r,x));if(!target)fail('Choisis un joueur connecté.');r.host=target.id;}
       else if(action==='leave'){
@@ -64,7 +65,7 @@ const server=http.createServer(async(req,res)=>{
           let data;
           if(b.saved){const entry=SAVED.find(s=>s.id===(b.saved===true?'karaoke':b.saved))||fail('Sélection introuvable.'),saved=JSON.parse(await readFile(new URL(`./public/playlists/${entry.id}.json`,import.meta.url),'utf8'));data={name:entry.name,curator:entry.curator,source:saved.source,exposed:saved.exposedCount,available:saved.playableCount,tracks:saved.tracks.filter(t=>t.url).map(t=>({...cleanTrack(t),...(entry.curator&&{curator:entry.curator})}))};}
           else data=await importSpotify(b.url);
-          lobby();if(p.left)fail('Tu as quitté le salon.');addTracks(r,data.tracks,p);
+          lobby();if(p.left)fail('Tu as quitté le salon.');addTracks(r,data.tracks,p,data.source);
           r.playlists=r.playlists.filter(x=>!(x.owner===p.id&&x.source===data.source));r.playlists.push({id:token(),owner:p.id,name:data.name,curator:data.curator,source:data.source,exposed:data.exposed,available:data.available});
           result={ok:true,name:data.name,exposed:data.exposed,available:data.available,complete:false};
         }catch(err){if(err.name==='TimeoutError'||err.message==='fetch failed')throw Error('Spotify est injoignable. Réessaie ou pioche une sélection toute prête.');throw err;}finally{p.importing=false;}
