@@ -23,6 +23,21 @@ test('client : un clic sur une sélection toute prête l’importe',async()=>{
   await c.click({saved:'faso-vibes'});
   assert.deepEqual(JSON.parse(c.run('JSON.stringify(calls)')),[['playlist',{saved:'faso-vibes'}]]);
 });
+test('invité : avatar et prêt, playlist visible sans commande de modification',()=>{
+  const c=client(),s={...structuredClone(state),me:'b',avatars:['zoe'],playlists:[{name:'Soirée entre amis',owner:'a'}]};
+  c.run(`state=${JSON.stringify(s)};render();`);const html=c.element('#app').innerHTML;
+  assert(html.includes('data-avatar="zoe"'));assert(html.includes('data-action="ready"'));assert(html.includes('Soirée entre amis'));assert(html.includes('social-launcher'));
+  for(const control of ['playlist-form','data-saved=','data-remove-playlist=','data-setting=','id="team"'])assert(!html.includes(control),control);
+  c.run("state.host='b';render();");assert(c.element('#app').innerHTML.includes('playlist-form'));
+});
+test('prêt : double clic et clic tardif ne peuvent pas annuler le statut',async()=>{
+  const c=client(),s=structuredClone(state);s.players[0].ready=false;
+  c.run(`state=${JSON.stringify(s)};var readyCalls=[];var releaseUnlock;unlock=()=>new Promise(resolve=>releaseUnlock=resolve);api=async(action,data)=>{readyCalls.push([action,data]);state.players[0].ready=true;};render();`);
+  const first=c.click({action:'ready'});await c.click({action:'ready'});c.run('releaseUnlock();');await first;await c.click({action:'ready'});
+  assert.deepEqual(JSON.parse(c.run('JSON.stringify(readyCalls)')),[['ready',{ready:true}]]);
+  assert(c.element('#app').innerHTML.includes('data-action="ready" disabled'));
+  assert(c.element('#app').innerHTML.includes('class="mic-icon"'));assert(!c.element('#app').innerHTML.includes('Prêt ! Annuler'));
+});
 test('client : réponse écrite, bonus, jokers et récapitulatif',()=>{
   const c=client(),s=structuredClone(state);s.phase='playing';s.settings.input='text';s.round={id:'r',number:1,total:1,startsAt:Date.now(),endsAt:Date.now()+30000,deadline:Date.now()+30000,canAnswer:true,questions:[{field:'title',options:[]}],bonus:{options:[{id:'a',label:'Alice'}]},stage:[{at:0,length:2}]};
   c.run(`state=${JSON.stringify(s)}; render();`);assert(c.element('#app').innerHTML.includes('data-text-field="title"'));assert(c.element('#app').innerHTML.includes('data-joker="time"'));assert(!c.element('#app').innerHTML.includes('data-joker="fifty"'));assert(c.element('#app').innerHTML.includes('Qui a ajouté ce son'));
@@ -49,4 +64,22 @@ test('audio : une erreur tardive de l’ancien morceau ne touche pas le suivant'
 test('audio : changer de manche conserve le lecteur sans charger une source vide',()=>{
   const c=client();c.run(`let emptied=0;player={pause(){},removeAttribute(){emptied++;},load(){emptied++;}};audio=player;resetAudio();`);
   assert.equal(c.run('emptied'),0);assert.equal(c.run('mediaPlayer()===player'),true);
+});
+
+test('chat escaped, drafts preserved, upload first',()=>{
+ const c=client(),s=structuredClone(state);s.messages=[{name:'<b>Alice</b>',text:'<script>alert(1)</script>'}];s.meetUrl='https://meet.google.com/abc-defg-hij';
+ c.run(`state=${JSON.stringify(s)};chatDraft='message en cours';render();`);const html=c.element('#app').innerHTML;
+ assert(html.includes('&lt;script&gt;alert(1)&lt;/script&gt;'));assert(html.includes('value="message en cours"'));assert(html.includes('social-launcher'));assert(html.includes('Rejoindre le vocal'));assert(!html.includes('meet-form'));assert(html.indexOf('playlist-form')<html.indexOf('Les joueurs'));
+});
+test('audio keeps playing after answer until personal deadline',()=>{
+ const c=client();c.run(`let pauses=0;audio={pause(){pauses++;}};state={phase:'playing',round:{id:'r',canAnswer:true,selection:{title:'a'},startsAt:Date.now()-1000,endsAt:Date.now()+10000,deadline:Date.now()+15000}};playKey='r:'+state.round.deadline;tick();`);assert.equal(c.run('pauses'),0);
+ c.run('state.round.deadline=Date.now()-1;tick();');assert.equal(c.run('pauses'),1);
+});
+test('décompte : trois bips et départ distinct, sans répétition ni coupure de musique',()=>{
+ const c=client();c.run(`var tones=[],pauses=0;audio={pause(){pauses++;}};ctx={state:'running',currentTime:0,destination:{},createOscillator(){const o={frequency:{value:0},connect(){},disconnect(){},start(){tones.push(this.frequency.value);},stop(){}};return o;},createGain(){return {gain:{setValueAtTime(){},linearRampToValueAtTime(){},exponentialRampToValueAtTime(){}},connect(){},disconnect(){}};}};var round={id:'count',canAnswer:true,startsAt:4000};`);
+ for(const now of [1000,1100,2000,2100,3000,3100,4000,4100,5000])c.run(`countdownSound(round,${now});`);
+ assert.deepEqual(JSON.parse(c.run('JSON.stringify(tones)')),[698.46,698.46,698.46,1046.5]);assert.equal(c.run('pauses'),0);
+ c.run("volume=0;round.id='silent';countdownSound(round,1000);");assert.equal(c.run('tones.length'),4);
+ c.run("volume=.35;ctx.state='suspended';round.id='blocked';countdownSound(round,1000);");assert.equal(c.run('tones.length'),4);
+ c.run('stopCountdownSound();');assert.equal(c.run('countdownNodes.length'),0);
 });

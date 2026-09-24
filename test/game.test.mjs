@@ -4,6 +4,7 @@ import {DEMO,questions,points,dedupe} from '../game.mjs';
 import './spotify.test.mjs';
 import './features.test.mjs';
 import './client.test.mjs';
+import './voice.test.mjs';
 
 test('QCM : quatre options distinctes et une bonne réponse par champ',()=>{
   for(let i=0;i<100;i++)for(const track of DEMO){

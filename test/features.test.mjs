@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {DEMO,matchesAnswer,mergeTracks,balancedDeck} from '../game.mjs';
-import {createRoom,addPlayer,start,readyAudio,answer,joker,reveal,publicState,transferHost,disconnected,teamScores,setAvatar,AVATARS,addTracks,removePlaylist} from '../engine.mjs';
+import {createRoom,addPlayer,start,readyAudio,answer,joker,reveal,publicState,transferHost,disconnected,teamScores,setAvatar,AVATARS,addTracks,removePlaylist,chat,setMeet} from '../engine.mjs';
 import {parseSpotifyPage} from '../spotify-import.mjs';
 function fixture(t,settings={}){
   const r=createRoom('TEST42'),a=addPlayer(r,'Alice'),b=addPlayer(r,'Bob');
@@ -52,12 +52,12 @@ test('50/50 privé, +5 secondes personnel, une utilisation par partie',t=>{
 test('progressif et réponse écrite : barème et historique individuel',t=>{
   const {r,a,b}=fixture(t,{input:'text',listening:'progressive',mode:'title'});start(r);playing(r);r.round.startsAt=Date.now()-8000;
   answer(r,a,{roundId:r.round.id,selection:{title:r.round.track.title}});assert.throws(()=>answer(r,a,{roundId:r.round.id,selection:{title:'autre'}}));
-  answer(r,b,{roundId:r.round.id,selection:{title:'incorrect'}});assert.equal(r.phase,'reveal');assert.equal(a.score,125);assert.equal(b.score,0);assert.equal(r.history.length,1);
+  answer(r,b,{roundId:r.round.id,selection:{title:'incorrect'}});assert.equal(r.phase,'playing');reveal(r);assert.equal(a.score,125);assert.equal(b.score,0);assert.equal(r.history.length,1);
   r.phase='finished';assert.equal(publicState(r,a).history[0].results.length,1);assert.equal(publicState(r,a).history[0].results[0].id,a.id);
 });
 test('bonus : tous les contributeurs du morceau sont acceptés',t=>{
   const {r,a,b}=fixture(t,{mode:'title'});r.tracks=r.tracks.map(x=>({...x,owners:[a.id,b.id]}));start(r);playing(r);
-  const selection={title:r.round.questions[0].correct};answer(r,a,{roundId:r.round.id,selection,bonus:a.id});answer(r,b,{roundId:r.round.id,selection,bonus:b.id});assert(r.round.results.every(x=>x.bonusCorrect));assert(a.score>150);
+  const selection={title:r.round.questions[0].correct};answer(r,a,{roundId:r.round.id,selection,bonus:a.id});answer(r,b,{roundId:r.round.id,selection,bonus:b.id});reveal(r);assert(r.round.results.every(x=>x.bonusCorrect));assert(a.score>150);
 });
 test('erreur audio annule les points et rend les jokers',t=>{
   const {r,a}=fixture(t);start(r);playing(r);joker(r,a,{roundId:r.round.id,kind:'fifty'});joker(r,a,{roundId:r.round.id,kind:'time'});readyAudio(r,a,{roundId:r.round.id,ok:false});assert.equal(r.phase,'reveal');assert(r.round.canceled);assert.equal(a.score,0);assert.deepEqual(a.jokers,{fifty:false,time:false});
@@ -75,4 +75,13 @@ test('analyse de page publique : ignore les morceaux sans extrait',()=>{
   const entity={title:'Ma sélection',trackList:[{entityType:'track',title:'Titre',subtitle:'Artiste',uri:'spotify:track:test',audioPreview:{url:'https://p.scdn.co/mp3-preview/test'}},{entityType:'track',title:'Sans extrait',subtitle:'Autre'}]};
   const html='<script id="__NEXT_DATA__" type="application/json">'+JSON.stringify({props:{pageProps:{state:{data:{entity}}}}})+'</script>';
   const result=parseSpotifyPage(html,'https://open.spotify.com/playlist/test');assert.equal(result.exposed,2);assert.equal(result.available,1);assert.equal(result.complete,false);assert.throws(()=>parseSpotifyPage('<html>Erreur</html>','test'));
+});
+
+test('chat borné et lien visio réservé au créateur',t=>{
+ const {r,a,b}=fixture(t);chat(r,a,' Salut ! ');assert.equal(publicState(r,b).messages[0].text,'Salut !');assert.throws(()=>chat(r,a,'encore'));assert.throws(()=>chat(r,b,' '.repeat(5)));assert.throws(()=>chat(r,b,'x'.repeat(501)));
+ assert.throws(()=>setMeet(r,b,'https://meet.google.com/abc-defg-hij'));assert.throws(()=>setMeet(r,a,'javascript:alert(1)'));setMeet(r,a,'https://meet.google.com/abc-defg-hij');assert.equal(publicState(r,b).meetUrl,r.meetUrl);setMeet(r,a,'');assert.equal(r.meetUrl,'');
+});
+test('toutes les réponses attendent la fin du chrono',t=>{
+ t.mock.timers.enable({apis:['setTimeout']});const {r,a,b}=fixture(t);start(r);readyAudio(r,a,{roundId:r.round.id,ok:true});readyAudio(r,b,{roundId:r.round.id,ok:true});t.mock.timers.tick(3500);r.round.startsAt=Date.now()-100;
+ const selection=Object.fromEntries(r.round.questions.map(q=>[q.field,q.correct]));answer(r,a,{roundId:r.round.id,selection});answer(r,b,{roundId:r.round.id,selection});assert.equal(r.phase,'playing');assert.equal(r.history.length,0);t.mock.timers.tick(24000);assert.equal(r.phase,'reveal');assert.equal(r.history.length,1);
 });
