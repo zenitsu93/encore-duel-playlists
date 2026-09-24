@@ -20,5 +20,6 @@
 .guide section{scroll-margin-top:24px}
 @media(max-width:600px){.summary-metrics{grid-template-columns:1fr}.guide .guide-grid{grid-template-columns:1fr}.guide h1{font-size:50px}.nav-links{gap:10px}.nav-links .live{display:none}}
 
+@media(max-width:420px){.settings{grid-template-columns:minmax(0,1fr)}}
 /* Mobile : en-tête compact, titre qui se coupe proprement, réponses QCM sur deux colonnes pour tout voir sans défiler. */
 @media(max-width:600px){input,select,textarea{font-size:16px!important}header{height:64px;padding:0 20px}.live{white-space:nowrap;font-size:13px}main{padding-top:24px}.hero h1{font-size:56px}.topline{margin-bottom:18px;gap:12px}.visualizer{margin:10px auto}.play-panel .progress{margin-bottom:14px}.question-label{margin:16px 0 10px;font-size:19px}.answers{gap:8px}.answer{padding:10px;gap:8px;min-height:52px;font-size:12px;overflow-wrap:anywhere}.answer span{min-width:22px;height:22px}.countdown{font-size:90px}}
