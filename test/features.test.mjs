@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {DEMO,matchesAnswer,mergeTracks,balancedDeck} from '../game.mjs';
-import {createRoom,addPlayer,start,readyAudio,answer,joker,reveal,publicState,transferHost,disconnected,teamScores,setAvatar,AVATARS} from '../engine.mjs';
+import {createRoom,addPlayer,start,readyAudio,answer,joker,reveal,publicState,transferHost,disconnected,teamScores,setAvatar,AVATARS,addTracks,removePlaylist} from '../engine.mjs';
 import {parseSpotifyPage} from '../spotify-import.mjs';
 function fixture(t,settings={}){
   const r=createRoom('TEST42'),a=addPlayer(r,'Alice'),b=addPlayer(r,'Bob');
@@ -9,6 +9,19 @@ function fixture(t,settings={}){
   Object.assign(r.settings,settings);t.after(()=>{clearTimeout(r.timer);r.players.forEach(p=>clearTimeout(p.disconnectTimer));});return {r,a,b};
 }
 function playing(r){clearTimeout(r.timer);r.phase='playing';r.round.startsAt=Date.now()-1000;r.round.endsAt=Date.now()+19000;}
+test('retirer une playlist garde les morceaux apportés par ailleurs',t=>{
+  const {r,a,b}=fixture(t),track=(title,artist='X')=>({id:title,title,artist,url:'https://p.scdn.co/'+title});
+  const add=(p,source,tracks)=>{addTracks(r,tracks,p,source);const pl={id:source+p.id,owner:p.id,source};r.playlists.push(pl);return pl;};
+  const karaoke=add(a,'karaoke',[track('Commun'),track('Seul A')]),faso=add(a,'faso',[track('Commun'),track('Faso')]);add(b,'bob',[track('Seul A')]);
+  assert.throws(()=>removePlaylist(r,b,karaoke.id),/introuvable/,'on ne retire que ses propres playlists');
+  removePlaylist(r,a,karaoke.id);
+  const titles=r.tracks.map(x=>x.title).sort();assert.deepEqual(titles,['Commun','Faso','Seul A']);
+  assert.deepEqual(r.tracks.find(x=>x.title==='Seul A').owners,[b.id],'le morceau reste à Bob seul');
+  assert.deepEqual(r.tracks.find(x=>x.title==='Commun').owners,[a.id],'encore apporté par l’autre playlist d’Alice');
+  assert.equal(r.playlists.length,2);
+  removePlaylist(r,a,faso.id);removePlaylist(r,b,'bob'+b.id);
+  assert(r.tracks.length&&r.tracks.every(x=>x.demo),'la démo revient quand tout est retiré');
+});
 test('avatars : distincts à l’arrivée, modifiables, jamais en double',t=>{
   const {r,a,b}=fixture(t);
   const others=Array.from({length:10},(_,i)=>addPlayer(r,'J'+i)),all=[a,b,...others];

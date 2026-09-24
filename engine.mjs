@@ -59,8 +59,15 @@ export function readyAudio(r,p,b){
   if(r.phase!=='loading'||!q.participants.includes(p.id))return;
   if(!q.loaded.includes(p.id))q.loaded.push(p.id);if(q.participants.every(id=>q.loaded.includes(id)))beginCountdown(r);
 }
-export function addTracks(r,tracks,p){
-  const incoming=tracks.map(t=>({...t,owners:[p.id]}));const merged=mergeTracks([...r.tracks.filter(t=>!t.demo),...incoming]);if(merged.length>1000)fail('Maximum 1 000 morceaux par salon.');r.tracks=merged;r.players.forEach(p=>p.ready=false);
+// Chaque morceau garde la trace de ses apports « joueur|source » pour pouvoir retirer une playlist sans toucher aux autres.
+export function addTracks(r,tracks,p,source='manual'){
+  const incoming=tracks.map(t=>({...t,owners:[p.id],from:[p.id+'|'+source]}));const merged=mergeTracks([...r.tracks.filter(t=>!t.demo),...incoming]);if(merged.length>1000)fail('Maximum 1 000 morceaux par salon.');r.tracks=merged;r.players.forEach(p=>p.ready=false);
+}
+export function removePlaylist(r,p,id){
+  const pl=r.playlists.find(x=>x.id===id&&x.owner===p.id);if(!pl)fail('Playlist introuvable.');const key=p.id+'|'+pl.source;
+  r.tracks=r.tracks.map(t=>t.from?.includes(key)?{...t,from:t.from.filter(k=>k!==key)}:t).filter(t=>t.demo||!t.from||t.from.length).map(t=>t.from?{...t,owners:[...new Set(t.from.map(k=>k.split('|')[0]))]}:t);
+  if(!r.tracks.length)r.tracks=DEMO.map(t=>({...t,owners:[]}));
+  r.playlists=r.playlists.filter(x=>x!==pl);r.players.forEach(x=>x.ready=false);
 }
 export function start(r){
   const active=r.players.filter(p=>!p.left&&online(r,p));if(active.length<2)fail('Invite au moins deux joueurs connectés.');if(active.some(p=>!p.ready))fail('Tous les joueurs connectés doivent être prêts.');
