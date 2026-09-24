@@ -5,14 +5,23 @@ import {readFileSync} from 'node:fs';
 const source=readFileSync(new URL('../public/app.js',import.meta.url),'utf8');
 function client(){
   const elements=new Map();const element=id=>{if(!elements.has(id))elements.set(id,{innerHTML:'',textContent:'',style:{},setAttribute(){},focus(){},setSelectionRange(){}});return elements.get(id);};
-  const storage=()=>({getItem(){return null;},setItem(){},removeItem(){}});
-  const context=vm.createContext({document:{querySelector:element,activeElement:null,addEventListener(){}},sessionStorage:storage(),localStorage:storage(),location:{search:'',origin:'http://localhost:4317'},history:{replaceState(){}},URLSearchParams,URL,console,setInterval(){},setTimeout(){},clearTimeout(){},window:{},navigator:{}});
-  vm.runInContext(source,context);return {context,element,run:code=>vm.runInContext(code,context)};
+  const storage=()=>({getItem(){return null;},setItem(){},removeItem(){}}),handlers={};
+  const context=vm.createContext({document:{querySelector:element,activeElement:null,addEventListener(type,fn){(handlers[type]??=[]).push(fn);}},sessionStorage:storage(),localStorage:storage(),location:{search:'',origin:'http://localhost:4317'},history:{replaceState(){}},URLSearchParams,URL,console,setInterval(){},setTimeout(){},clearTimeout(){},window:{},navigator:{}});
+  vm.runInContext(source,context);
+  const click=async dataset=>{for(const fn of handlers.click||[])await fn({target:{closest:()=>({dataset})}});};
+  return {context,element,click,run:code=>vm.runInContext(code,context)};
 }
 const state={code:'TEST42',host:'a',me:'a',phase:'lobby',players:[{id:'a',name:'Alice',score:0,ready:true,online:true,team:'lime'},{id:'b',name:'Bob',score:0,ready:true,online:true,team:'purple'}],tracks:[{id:'1',title:'<script>bad</script>',artist:'Artiste',owners:['a']}],settings:{mode:'both',input:'qcm',listening:'progressive',seconds:20,rounds:8,teams:true,jokers:true,balanced:true,bonus:true},playlists:[],jokers:{fifty:false,time:false},teams:[{id:'lime',name:'Or',score:0},{id:'purple',name:'Ciel',score:0}],reactions:[],history:[]};
 test('client : accueil, salon, variantes, rendu texte échappé',()=>{
   const c=client();assert(c.element('#app').innerHTML.includes('Comment jouer'));c.run(`state=${JSON.stringify(state)}; render();`);
   const html=c.element('#app').innerHTML;assert(html.includes('playlist-form'));assert(html.includes('data-setting="listening"'));assert(html.includes('Mon équipe'));assert(html.includes('&lt;script&gt;bad&lt;/script&gt;'));assert(!html.includes('<script>bad'));
+});
+test('client : un clic sur une sélection toute prête l’importe',async()=>{
+  const c=client(),s={...structuredClone(state),saved:[{id:'faso-vibes',name:'Faso Vibes 🇧🇫'}]};
+  c.run(`state=${JSON.stringify(s)}; render(); var calls=[]; api=async(action,data)=>{calls.push([action,data]);return {name:'Faso Vibes 🇧🇫',available:59,exposed:61};};`);
+  assert(c.element('#app').innerHTML.includes('data-saved="faso-vibes"'));
+  await c.click({saved:'faso-vibes'});
+  assert.deepEqual(JSON.parse(c.run('JSON.stringify(calls)')),[['playlist',{saved:'faso-vibes'}]]);
 });
 test('client : réponse écrite, bonus, jokers et récapitulatif',()=>{
   const c=client(),s=structuredClone(state);s.phase='playing';s.settings.input='text';s.round={id:'r',number:1,total:1,startsAt:Date.now(),endsAt:Date.now()+30000,deadline:Date.now()+30000,canAnswer:true,questions:[{field:'title',options:[]}],bonus:{options:[{id:'a',label:'Alice'}]},stage:[{at:0,length:2}]};

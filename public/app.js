@@ -98,11 +98,11 @@ document.addEventListener('click',async e=>{
     if(b.dataset.transfer){await api('transfer',{playerId:b.dataset.transfer});return;}
     if(b.dataset.joker){await api('joker',{kind:b.dataset.joker,roundId:state.round.id});return;}
     if(b.dataset.reaction){await api('reaction',{reaction:b.dataset.reaction});return;}
+    if(b.dataset.saved){await importPlaylist({saved:b.dataset.saved});return;}
     const a=b.dataset.action;if(!a)return;
     if(a==='resume'){session=stored('encore-last-session',localStorage);if(session){saveSession();connect();}return;}
     if(a==='exit'){try{if(state)await api('leave');}catch{}events?.close();resetAudio();session=null;state=null;sessionStorage.removeItem('encore-session');localStorage.removeItem('encore-last-session');history.replaceState(null,'','/');home();return;}
     if(a==='share'){try{await navigator.clipboard.writeText(`${location.origin}/?room=${state.code}`);toast('Lien copié !');}catch{toast(`Code du salon : ${state.code}`);}return;}
-    if(b.dataset.saved){await importPlaylist({saved:b.dataset.saved});return;}
     if(a==='ready'){await unlock();await api('ready',{ready:!state.players.find(p=>p.id===state.me).ready});return;}
     if(a==='audio'){if(state.phase==='playing'){retryAudio();return;}await unlock();if(state.phase==='loading'&&state.round.audio.notes){preloadId='';await preload();}toast('Son activé');return;}
     if(a==='answer'){await api('answer',{roundId:state.round.id,selection,bonus:bonusSelection});return;}
