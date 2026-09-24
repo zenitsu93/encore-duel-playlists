@@ -1,3 +1,4 @@
+import {voiceState,voiceSignal} from './voice.mjs';
 import http from 'node:http';
 import {readFile} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
@@ -5,7 +6,7 @@ import {randomInt} from 'node:crypto';
 import {DEMO,token} from './game.mjs';
 import {importSpotify} from './spotify-import.mjs';
 import {SAVED} from './playlists.mjs';
-import {createRoom,addPlayer,online,publicState,broadcast,readyAudio,addTracks,start,answer,joker,transferHost,disconnected,reactions,setAvatar,AVATARS,removePlaylist} from './engine.mjs';
+import {createRoom,addPlayer,online,publicState,broadcast,readyAudio,addTracks,start,answer,joker,transferHost,disconnected,reactions,chat,setMeet,setAvatar,AVATARS,removePlaylist} from './engine.mjs';
 const rooms=new Map(),port=Number(process.env.PORT||4317);
 const fail=m=>{throw Error(m)};
 const member=(r,key)=>r.players.find(p=>p.token===key&&!p.left)||fail('Session expirée. Rejoins le salon.');
@@ -31,7 +32,7 @@ const server=http.createServer(async(req,res)=>{
       const currentHost=r.players.find(x=>x.id===r.host&&!x.left);
       if(!currentHost||(!online(r,currentHost)&&currentHost.offlineAt&&Date.now()-currentHost.offlineAt>=15000))transferHost(r);
       broadcast(r);const heartbeat=setInterval(()=>res.write(': ping\n\n'),20000);
-      req.on('close',()=>{clearInterval(heartbeat);r.clients.delete(id);if(!online(r,p))disconnected(r,p);broadcast(r);});return;
+      req.on('close',()=>{clearInterval(heartbeat);r.clients.delete(id);if(!online(r,p)){p.voice=null;disconnected(r,p);}broadcast(r);});return;
     }
     if(req.method==='POST'&&url.pathname.startsWith('/api/')){
       if(req.headers.origin&&!['http://','https://'].some(s=>req.headers.origin===s+req.headers.host))fail('Origine refusée.');
@@ -48,32 +49,37 @@ const server=http.createServer(async(req,res)=>{
       const lobby=()=>{if(r.phase!=='lobby')fail('Attends la fin de la partie.');};
       let result={ok:true};
       if(action==='state'){send(200,publicState(r,p));return;}
-      if(action==='settings'){
+      if(action==='voice-config'){send(200,{iceServers:process.env.VOICE_ICE_SERVERS?JSON.parse(process.env.VOICE_ICE_SERVERS):[{urls:'stun:stun.l.google.com:19302'}]});return;}
+      if(action==='voice-signal'){voiceSignal(r,p,b);send(200,{ok:true});return;}
+      if(action==='voice-state'){voiceState(r,p,b);}
+      else if(action==='chat'){chat(r,p,b.text);}
+      else if(action==='meet'){setMeet(r,p,b.url);}
+      else if(action==='settings'){
         host();lobby();const s={...r.settings,...b.settings};
         // Accept legacy fields for older saved clients and integration scripts.
         for(const key of ['mode','rounds','seconds'])if(b[key]!==undefined)s[key]=b[key];
         if(!['title','artist','both'].includes(s.mode)||!['qcm','text'].includes(s.input)||!['classic','progressive'].includes(s.listening))fail('Mode invalide.');
-        r.settings={mode:s.mode,input:s.input,listening:s.listening,rounds:Math.max(1,Math.min(30,Math.floor(Number(s.rounds)||8))),seconds:Math.max(10,Math.min(30,Math.floor(Number(s.seconds)||20))),balanced:!!s.balanced,bonus:!!s.bonus,teams:!!s.teams,jokers:!!s.jokers};r.players.forEach(p=>p.ready=false);
-      }else if(action==='ready'){lobby();p.ready=!!b.ready;}
+        r.settings={mode:s.mode,input:s.input,listening:s.listening,rounds:Math.max(1,Math.min(30,Math.floor(Number(s.rounds)||8))),seconds:Math.max(10,Math.min(30,Math.floor(Number(s.seconds)||20))),balanced:!!s.balanced,bonus:!!s.bonus,teams:!!s.teams,jokers:!!s.jokers};
+      }else if(action==='ready'){lobby();p.ready=p.ready||b.ready===true;}
       else if(action==='avatar'){lobby();setAvatar(r,p,b.avatar);}
-      else if(action==='playlist-remove'){lobby();if(p.importing)fail('Un import est déjà en cours.');removePlaylist(r,p,b.playlistId);}
-      else if(action==='team'){lobby();if(!['lime','purple'].includes(b.team))fail('Équipe inconnue.');p.team=b.team;p.ready=false;}
+      else if(action==='playlist-remove'){host();lobby();if(p.importing)fail('Un import est déjà en cours.');removePlaylist(r,p,b.playlistId);}
+      else if(action==='team'){lobby();if(!['lime','purple'].includes(b.team))fail('Équipe inconnue.');p.team=b.team;}
       else if(action==='transfer'){host();const target=r.players.find(x=>x.id===b.playerId&&!x.left&&online(r,x));if(!target)fail('Choisis un joueur connecté.');r.host=target.id;}
       else if(action==='leave'){
-        p.left=true;p.ready=false;for(const [id,c]of r.clients)if(c.playerId===p.id){c.res.end();r.clients.delete(id);}if(r.host===p.id)transferHost(r);
+        p.left=true;p.ready=false;p.voice=null;for(const [id,c]of r.clients)if(c.playerId===p.id){c.res.end();r.clients.delete(id);}if(r.host===p.id)transferHost(r);
       }else if(action==='tracks'){
-        lobby();if(!Array.isArray(b.tracks)||!b.tracks.length||b.tracks.length>100)fail('Ajoute entre 1 et 100 morceaux.');addTracks(r,b.tracks.map(cleanTrack),p);
+        host();lobby();if(!Array.isArray(b.tracks)||!b.tracks.length||b.tracks.length>100)fail('Ajoute entre 1 et 100 morceaux.');addTracks(r,b.tracks.map(cleanTrack),p);
       }else if(action==='playlist'){
-        lobby();if(p.importing)fail('Un import est déjà en cours.');if(!b.saved){if(p.lastImport&&Date.now()-p.lastImport<5000)fail('Patiente quelques secondes avant un nouvel import.');p.lastImport=Date.now();}p.importing=true;
+        host();lobby();if(p.importing)fail('Un import est déjà en cours.');if(!b.saved){if(p.lastImport&&Date.now()-p.lastImport<5000)fail('Patiente quelques secondes avant un nouvel import.');p.lastImport=Date.now();}p.importing=true;
         try{
           let data;
           if(b.saved){const entry=SAVED.find(s=>s.id===(b.saved===true?'karaoke':b.saved))||fail('Sélection introuvable.'),saved=JSON.parse(await readFile(new URL(`./public/playlists/${entry.id}.json`,import.meta.url),'utf8'));data={name:entry.name,curator:entry.curator,source:saved.source,exposed:saved.exposedCount,available:saved.playableCount,tracks:saved.tracks.filter(t=>t.url).map(t=>({...cleanTrack(t),...(entry.curator&&{curator:entry.curator})}))};}
           else data=await importSpotify(b.url);
-          lobby();if(p.left)fail('Tu as quitté le salon.');addTracks(r,data.tracks,p,data.source);
+          host();lobby();if(p.left)fail('Tu as quitté le salon.');addTracks(r,data.tracks,p,data.source);
           r.playlists=r.playlists.filter(x=>!(x.owner===p.id&&x.source===data.source));r.playlists.push({id:token(),owner:p.id,name:data.name,curator:data.curator,source:data.source,exposed:data.exposed,available:data.available});
           result={ok:true,name:data.name,exposed:data.exposed,available:data.available,complete:false};
         }catch(err){if(err.name==='TimeoutError'||err.message==='fetch failed')throw Error('Spotify est injoignable. Réessaie ou pioche une sélection toute prête.');throw err;}finally{p.importing=false;}
-      }else if(action==='demo'){host();lobby();r.tracks=DEMO.map(t=>({...t,owners:[]}));r.playlists=[];r.players.forEach(p=>p.ready=false);}
+      }else if(action==='demo'){host();lobby();r.tracks=DEMO.map(t=>({...t,owners:[]}));r.playlists=[];}
       else if(action==='start'){host();lobby();if(r.players.some(p=>p.importing))fail('Attends la fin des imports.');start(r);}
       else if(action==='audio-ready'){readyAudio(r,p,b);}
       else if(action==='audio-error'){readyAudio(r,p,{...b,ok:false});}
@@ -86,7 +92,7 @@ const server=http.createServer(async(req,res)=>{
       broadcast(r);send(200,result);return;
     }
     if(['GET','HEAD'].includes(req.method)){
-      const paths={'/':'index.html','/app.js':'app.js','/style.css':'style.css','/features.css':'features.css','/favicon.svg':'favicon.svg','/og-image.png':'og-image.png','/apple-touch-icon.png':'apple-touch-icon.png','/guide':'guide.html','/spotify':'spotify.html','/spotify.js':'spotify.js','/spotify-url.js':'spotify-url.js','/playlists/karaoke.json':'playlists/karaoke.json',...Object.fromEntries(AVATARS.map(a=>[`/avatars/${a}.svg`,`avatars/${a}.svg`]))};
+      const paths={'/':'index.html','/app.js':'app.js','/voice.js':'voice.js','/style.css':'style.css','/features.css':'features.css','/favicon.svg':'favicon.svg','/og-image.png':'og-image.png','/apple-touch-icon.png':'apple-touch-icon.png','/guide':'guide.html','/spotify':'spotify.html','/spotify.js':'spotify.js','/spotify-url.js':'spotify-url.js','/playlists/karaoke.json':'playlists/karaoke.json',...Object.fromEntries(AVATARS.map(a=>[`/avatars/${a}.svg`,`avatars/${a}.svg`]))};
       if(paths[url.pathname]){const file=paths[url.pathname];let data=await readFile(fileURLToPath(new URL(`./public/${file}`,import.meta.url)));if(file.endsWith('.html'))data=data.toString().replaceAll('__ORIGIN__',`${req.headers['x-forwarded-proto']==='https'?'https':'http'}://${/^[\w.:-]+$/.test(req.headers.host||'')?req.headers.host:`localhost:${port}`}`);res.writeHead(200,{'Content-Type':file.endsWith('.png')?'image/png':file.endsWith('.svg')?'image/svg+xml':file.endsWith('.json')?'application/json; charset=utf-8':file.endsWith('.js')?'text/javascript; charset=utf-8':file.endsWith('.css')?'text/css; charset=utf-8':'text/html; charset=utf-8','Cache-Control':'no-cache','X-Content-Type-Options':'nosniff'});res.end(req.method==='HEAD'?undefined:data);return;}
     }send(404,{error:'Introuvable'});
   }catch(e){if(!res.headersSent)send(400,{error:e.message==='Invalid URL'?'Lien invalide.':e.message});else res.end();}

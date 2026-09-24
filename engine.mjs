@@ -2,7 +2,7 @@ import {DEMO,token,questions,shuffle,points,matchesAnswer,balancedDeck,mergeTrac
 import {SAVED} from './playlists.mjs';
 export const defaults={mode:'both',rounds:8,seconds:20,input:'qcm',listening:'classic',balanced:true,bonus:true,teams:false,jokers:true};
 export const reactions=['😂','🔥','👏','😭','Je la connaissais !'];
-export function createRoom(code){return {code,phase:'lobby',players:[],clients:new Map(),tracks:DEMO.map(t=>({...t,owners:[]})),playlists:[],settings:{...defaults},history:[],reactions:[],touched:Date.now()};}
+export function createRoom(code){return {code,phase:'lobby',players:[],clients:new Map(),tracks:DEMO.map(t=>({...t,owners:[]})),playlists:[],settings:{...defaults},history:[],reactions:[],messages:[],meetUrl:"",touched:Date.now()};}
 // Avatars « Big Smile » (Ashley Seo, CC BY 4.0, via DiceBear), servis depuis public/avatars/<id>.svg.
 export const AVATARS=['zoe','kofi','aya','omar','awa','mariam','yann','chloe','ines','sami','fatou','theo','moussa','rose','idriss','emma','mila','sara'];
 const takenAvatars=(r,except)=>r.players.filter(x=>!x.left&&x!==except).map(x=>x.avatar);
@@ -13,8 +13,8 @@ export function teamScores(r){return ['lime','purple'].map(id=>({id,name:id==='l
 export function publicState(r,p){
   const q=r.round,revealed=['reveal','finished'].includes(r.phase),answer=q?.answers[p.id];
   return {code:r.code,phase:r.phase,host:r.host,me:p.id,settings:r.settings,serverNow:Date.now(),
-    avatars:AVATARS,players:r.players.map(x=>({id:x.id,name:x.name,avatar:x.avatar,score:x.score,ready:x.ready,team:x.team,left:!!x.left,online:online(r,x),answered:!!q?.answers[x.id]})),
-    teams:teamScores(r),jokers:p.jokers,playlists:r.playlists,saved:SAVED,reactions:r.reactions,
+    avatars:AVATARS,players:r.players.map(x=>({id:x.id,name:x.name,avatar:x.avatar,voice:x.voice||null,score:x.score,ready:x.ready,team:x.team,left:!!x.left,online:online(r,x),answered:!!q?.answers[x.id]})),
+    teams:teamScores(r),jokers:p.jokers,playlists:r.playlists,saved:SAVED,reactions:r.reactions,messages:r.messages,meetUrl:r.meetUrl,
     tracks:r.phase==='lobby'?r.tracks.map(({id,title,artist,demo,owners,curator})=>({id,title,artist,demo,owners,curator})):[],
     history:r.phase==='finished'?r.history.map(h=>({...h,results:h.results.filter(x=>x.id===p.id)})):[],
     round:q?{id:q.id,number:Math.min(r.index+1,r.deck.length),total:r.deck.length,startsAt:q.startsAt,endsAt:q.endsAt,deadline:q.endsAt+(q.extra[p.id]||0),
@@ -61,13 +61,13 @@ export function readyAudio(r,p,b){
 }
 // Chaque morceau garde la trace de ses apports « joueur|source » pour pouvoir retirer une playlist sans toucher aux autres.
 export function addTracks(r,tracks,p,source='manual'){
-  const incoming=tracks.map(t=>({...t,owners:[p.id],from:[p.id+'|'+source]}));const merged=mergeTracks([...r.tracks.filter(t=>!t.demo),...incoming]);if(merged.length>1000)fail('Maximum 1 000 morceaux par salon.');r.tracks=merged;r.players.forEach(p=>p.ready=false);
+  const incoming=tracks.map(t=>({...t,owners:[p.id],from:[p.id+'|'+source]}));const merged=mergeTracks([...r.tracks.filter(t=>!t.demo),...incoming]);if(merged.length>1000)fail('Maximum 1 000 morceaux par salon.');r.tracks=merged;
 }
 export function removePlaylist(r,p,id){
   const pl=r.playlists.find(x=>x.id===id&&x.owner===p.id);if(!pl)fail('Playlist introuvable.');const key=p.id+'|'+pl.source;
   r.tracks=r.tracks.map(t=>t.from?.includes(key)?{...t,from:t.from.filter(k=>k!==key)}:t).filter(t=>t.demo||!t.from||t.from.length).map(t=>t.from?{...t,owners:[...new Set(t.from.map(k=>k.split('|')[0]))]}:t);
   if(!r.tracks.length)r.tracks=DEMO.map(t=>({...t,owners:[]}));
-  r.playlists=r.playlists.filter(x=>x!==pl);r.players.forEach(x=>x.ready=false);
+  r.playlists=r.playlists.filter(x=>x!==pl);
 }
 export function start(r){
   const active=r.players.filter(p=>!p.left&&online(r,p));if(active.length<2)fail('Invite au moins deux joueurs connectés.');if(active.some(p=>!p.ready))fail('Tous les joueurs connectés doivent être prêts.');
@@ -81,7 +81,7 @@ export function answer(r,p,b){
   if(!q.participants.includes(p.id))fail('Tu participeras à la prochaine manche.');if(q.answers[p.id])fail('Réponse déjà validée.');
   const selection={};for(const x of q.questions){const value=b.selection?.[x.field];if(r.settings.input==='qcm'){if(!x.options.some(o=>o.id===value)||q.hidden[p.id]?.includes(value))fail('Choisis une réponse à chaque question.');}else if(typeof value!=='string'||!value.trim()||value.length>150)fail('Écris une réponse à chaque question.');selection[x.field]=value;}
   const bonus=q.bonus?.options.some(o=>o.id===b.bonus)?b.bonus:null;q.answers[p.id]={selection,bonus,elapsed:now-q.startsAt};
-  if(q.participants.every(id=>q.answers[id]||!r.players.some(p=>p.id===id&&online(r,p))))reveal(r);
+  // Keep the scheduled deadline even when everyone has answered.
 }
 export function joker(r,p,b){
   const q=r.round;if(!r.settings.jokers||r.phase!=='playing'||b.roundId!==q.id||!q.participants.includes(p.id)||q.answers[p.id]||Date.now()>=q.endsAt+(q.extra[p.id]||0))fail('Joker indisponible.');
@@ -92,4 +92,17 @@ export function joker(r,p,b){
 export function transferHost(r){const next=r.players.find(p=>!p.left&&online(r,p));if(next)r.host=next.id;}
 export function disconnected(r,p){
   p.offlineAt=Date.now();clearTimeout(p.disconnectTimer);p.disconnectTimer=setTimeout(()=>{if(!online(r,p)&&r.host===p.id){transferHost(r);broadcast(r);}},15000);
+}
+
+export function chat(r,p,text){
+  if(typeof text!=='string'||!text.trim()||text.trim().length>500)fail('Écris un message de 1 à 500 caractères.');
+  if(p.lastMessage&&Date.now()-p.lastMessage<1000)fail('Patiente une seconde entre deux messages.');
+  p.lastMessage=Date.now();r.messages.push({id:token(),name:p.name,playerId:p.id,text:text.trim()});r.messages=r.messages.slice(-50);
+}
+export function setMeet(r,p,value){
+  if(p.id!==r.host)fail('Seul le créateur peut modifier le lien visio.');
+  if(typeof value!=='string'||value.length>300)fail('Lien Google Meet invalide.');
+  const url=value.trim();
+  if(url&&!/^https:\/\/meet\.google\.com\/[a-z]{3}-[a-z]{4}-[a-z]{3}$/.test(url))fail('Colle un lien Google Meet au format https://meet.google.com/abc-defg-hij.');
+  r.meetUrl=url;
 }

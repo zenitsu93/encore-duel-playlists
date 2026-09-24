@@ -47,6 +47,20 @@ Créer un salon et partager son code avec un autre navigateur ou une fenêtre pr
 - Transfert manuel du rôle de créateur ; transfert automatique à un joueur connecté après 15 secondes d’absence.
 - Page `/guide` expliquant l’ensemble des règles ; favicon et signature « Made by Christian BADOLO ».
 
+## Chat vocal intégré
+
+Le bouton flottant « Entre amis » ouvre les messages et le vocal sur la page du jeu. « Rejoindre le vocal » démarre en écoute seule ; le micro est demandé uniquement avec « Activer mon micro ». Chaque personne peut être coupée localement sans modifier la musique. Quitter le vocal ou le salon arrête les pistes du micro et les connexions. Après une interruption réseau, rejoindre le vocal à nouveau.
+
+Le micro nécessite HTTPS ou localhost (HTTP sur une IP du réseau local ne suffit pas). Le vocal utilise WebRTC, avec signalisation privée via HTTP/SSE et connexions audio entre les joueurs. Pour les réseaux qui bloquent les connexions directes, configurer un relais TURN dans `VOICE_ICE_SERVERS`, un tableau JSON de serveurs ICE, par exemple :
+
+```json
+[{"urls":"stun:stun.l.google.com:19302"},{"urls":"turn:turn.example.com:3478","username":"user","credential":"password"}]
+```
+
+Sans cette variable, seul le STUN public est utilisé : certains réseaux ne pourront pas établir le vocal. Les identifiants TURN sont transmis aux membres authentifiés du salon ; utiliser des identifiants dédiés et limités. Aucun relais TURN n'est fourni avec le projet. La caméra n'est pas activée. Le test `test/voice.test.mjs` vérifie les commandes et la signalisation avec WebRTC simulé ; une écoute sur deux appareils est nécessaire pour valider les micros et le réseau réels.
+
+Références : [getUserMedia](https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia), [relais TURN](https://webrtc.org/getting-started/turn-server).
+
 ## Spotify et limites
 
 Le parseur utilise uniquement les données exposées par la page publique. Il ne garantit pas de récupérer toute une playlist : souvent seuls 100 morceaux sont exposés, sans pagination dans les données utilisées. Les titres sans extrait sont exclus et comptabilisés dans le résultat d’import. Les playlists privées et les pages dont le format a changé sont refusées avec un message. L’accès réseau sortant vers Spotify est nécessaire.

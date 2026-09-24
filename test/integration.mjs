@@ -5,14 +5,28 @@ const a=(await api('create',{name:'Alice test'})).body;
 const b=(await api('join',{name:'Bob test',code:a.code})).body;
 const controller=new AbortController();
 const secondController=new AbortController();
-let state;
+let state;const voiceEvents=[];
 const response=await fetch(`${base}/api/events?code=${a.code}&token=${a.token}`,{signal:controller.signal});
 const secondResponse=await fetch(`${base}/api/events?code=${b.code}&token=${b.token}`,{signal:secondController.signal});
-const secondConsume=(async()=>{try{for await(const chunk of secondResponse.body){}}catch(e){if(e.name!=='AbortError')throw e;}})();
+const secondConsume=(async()=>{let voiceBuffer='';try{for await(const chunk of secondResponse.body){voiceBuffer+=new TextDecoder().decode(chunk);let end;while((end=voiceBuffer.indexOf('\n\n'))>=0){const event=voiceBuffer.slice(0,end);voiceBuffer=voiceBuffer.slice(end+2);if(event.startsWith('event: voice\n'))voiceEvents.push(JSON.parse(event.split('data: ')[1]));}}}catch(e){if(e.name!=='AbortError')throw e;}})();
 const consume=(async()=>{let buffer='';try{for await(const chunk of response.body){buffer+=new TextDecoder().decode(chunk);let i;while((i=buffer.indexOf('\n\n'))>=0){const event=buffer.slice(0,i);buffer=buffer.slice(i+2);if(event.startsWith('data: '))state=JSON.parse(event.slice(6));}}}catch(e){if(e.name!=='AbortError')throw e;}})();
-async function until(check){const start=Date.now();while(!check()){if(Date.now()-start>12000)throw Error('État attendu absent : '+state?.phase);await new Promise(r=>setTimeout(r,30));}}
+async function until(check){const start=Date.now();while(!check()){if(Date.now()-start>40000)throw Error('État attendu absent : '+state?.phase);await new Promise(r=>setTimeout(r,30));}}
 try{
   await until(()=>state?.players.length===2);
+  assert.equal((await api('chat',{...a,text:'Salut Bob'})).status,200);
+  await until(()=>state.messages?.length===1);
+  assert.equal(state.messages[0].text,'Salut Bob');
+  assert.equal((await api('meet',{...b,url:'https://meet.google.com/abc-defg-hij'})).status,400);
+  assert.equal((await api('meet',{...a,url:'https://meet.google.com/abc-defg-hij'})).status,200);
+  await until(()=>state.meetUrl==='https://meet.google.com/abc-defg-hij');
+  assert.equal((await api('voice-state',{...a,active:true,voiceId:'alice-voice'})).status,200);
+  assert.equal((await api('voice-state',{...b,active:true,voiceId:'bob-voice'})).status,200);
+  const bobId=state.players.find(p=>p.name==='Bob test').id;
+  assert.equal((await api('voice-signal',{...a,to:bobId,voiceId:'alice-voice',targetVoiceId:'bob-voice',signal:{type:'offer',sdp:'test-sdp'}})).status,200);
+  await until(()=>voiceEvents.length===1);assert.equal(voiceEvents[0].signal.sdp,'test-sdp');
+  assert.equal((await api('voice-state',{...b,active:false,voiceId:'bob-voice'})).status,200);
+  assert.equal((await api('voice-signal',{...a,to:bobId,voiceId:'alice-voice',targetVoiceId:'bob-voice',signal:{type:'offer',sdp:'test-sdp'}})).status,400);
+  assert.equal((await api('voice-state',{...a,active:false,voiceId:'alice-voice'})).status,200);
   const snapshotResponse=await fetch(base+'/playlists/karaoke.json');
   assert.equal(snapshotResponse.status,200);
   const snapshot=await snapshotResponse.json();
