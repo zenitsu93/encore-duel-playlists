@@ -3,13 +3,16 @@ import {SAVED} from './playlists.mjs';
 export const defaults={mode:'both',rounds:8,seconds:20,input:'qcm',listening:'classic',balanced:true,bonus:true,teams:false,jokers:true};
 export const reactions=['😂','🔥','👏','😭','Je la connaissais !'];
 export function createRoom(code){return {code,phase:'lobby',players:[],clients:new Map(),tracks:DEMO.map(t=>({...t,owners:[]})),playlists:[],settings:{...defaults},history:[],reactions:[],touched:Date.now()};}
-export function addPlayer(r,name){const p={id:token(),token:token(),name,score:0,ready:false,team:r.players.length%2?'purple':'lime',jokers:{fifty:false,time:false},offlineAt:null};r.players.push(p);r.host??=p.id;return p;}
+export const AVATARS=['🦁','🐯','🦊','🐼','🐸','🐙','🦄','🐵','🐧','🦉','🐨','🐰','🦖','🐝','👽','🤖','🎸','🎧'];
+const takenAvatars=(r,except)=>r.players.filter(x=>!x.left&&x!==except).map(x=>x.avatar);
+export function addPlayer(r,name){const free=AVATARS.filter(a=>!takenAvatars(r).includes(a)),p={id:token(),token:token(),name,avatar:shuffle(free)[0]||AVATARS[0],score:0,ready:false,team:r.players.length%2?'purple':'lime',jokers:{fifty:false,time:false},offlineAt:null};r.players.push(p);r.host??=p.id;return p;}
+export function setAvatar(r,p,avatar){if(!AVATARS.includes(avatar))fail('Avatar inconnu.');if(takenAvatars(r,p).includes(avatar))fail('Cet avatar est déjà pris.');p.avatar=avatar;}
 export function online(r,p){return [...r.clients.values()].some(c=>c.playerId===p.id);}
 export function teamScores(r){return ['lime','purple'].map(id=>({id,name:id==='lime'?'Équipe Or':'Équipe Ciel',score:r.players.filter(p=>p.team===id).reduce((s,p)=>s+p.score,0)}));}
 export function publicState(r,p){
   const q=r.round,revealed=['reveal','finished'].includes(r.phase),answer=q?.answers[p.id];
   return {code:r.code,phase:r.phase,host:r.host,me:p.id,settings:r.settings,serverNow:Date.now(),
-    players:r.players.map(x=>({id:x.id,name:x.name,score:x.score,ready:x.ready,team:x.team,left:!!x.left,online:online(r,x),answered:!!q?.answers[x.id]})),
+    avatars:AVATARS,players:r.players.map(x=>({id:x.id,name:x.name,avatar:x.avatar,score:x.score,ready:x.ready,team:x.team,left:!!x.left,online:online(r,x),answered:!!q?.answers[x.id]})),
     teams:teamScores(r),jokers:p.jokers,playlists:r.playlists,saved:SAVED,reactions:r.reactions,
     tracks:r.phase==='lobby'?r.tracks.map(({id,title,artist,demo,owners})=>({id,title,artist,demo,owners})):[],
     history:r.phase==='finished'?r.history.map(h=>({...h,results:h.results.filter(x=>x.id===p.id)})):[],

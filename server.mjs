@@ -5,7 +5,7 @@ import {randomInt} from 'node:crypto';
 import {DEMO,token} from './game.mjs';
 import {importSpotify} from './spotify-import.mjs';
 import {SAVED} from './playlists.mjs';
-import {createRoom,addPlayer,online,publicState,broadcast,readyAudio,addTracks,start,answer,joker,transferHost,disconnected,reactions} from './engine.mjs';
+import {createRoom,addPlayer,online,publicState,broadcast,readyAudio,addTracks,start,answer,joker,transferHost,disconnected,reactions,setAvatar} from './engine.mjs';
 const rooms=new Map(),port=Number(process.env.PORT||4317);
 const fail=m=>{throw Error(m)};
 const member=(r,key)=>r.players.find(p=>p.token===key&&!p.left)||fail('Session expirée. Rejoins le salon.');
@@ -51,6 +51,7 @@ const server=http.createServer(async(req,res)=>{
         if(!['title','artist','both'].includes(s.mode)||!['qcm','text'].includes(s.input)||!['classic','progressive'].includes(s.listening))fail('Mode invalide.');
         r.settings={mode:s.mode,input:s.input,listening:s.listening,rounds:Math.max(1,Math.min(30,Math.floor(Number(s.rounds)||8))),seconds:Math.max(10,Math.min(30,Math.floor(Number(s.seconds)||20))),balanced:!!s.balanced,bonus:!!s.bonus,teams:!!s.teams,jokers:!!s.jokers};r.players.forEach(p=>p.ready=false);
       }else if(action==='ready'){lobby();p.ready=!!b.ready;}
+      else if(action==='avatar'){lobby();setAvatar(r,p,b.avatar);}
       else if(action==='team'){lobby();if(!['lime','purple'].includes(b.team))fail('Équipe inconnue.');p.team=b.team;p.ready=false;}
       else if(action==='transfer'){host();const target=r.players.find(x=>x.id===b.playerId&&!x.left&&online(r,x));if(!target)fail('Choisis un joueur connecté.');r.host=target.id;}
       else if(action==='leave'){
