@@ -1,4 +1,5 @@
 import {DEMO,token,questions,shuffle,points,matchesAnswer,balancedDeck,mergeTracks} from './game.mjs';
+import {SAVED} from './playlists.mjs';
 export const defaults={mode:'both',rounds:8,seconds:20,input:'qcm',listening:'classic',balanced:true,bonus:true,teams:false,jokers:true};
 export const reactions=['😂','🔥','👏','😭','Je la connaissais !'];
 export function createRoom(code){return {code,phase:'lobby',players:[],clients:new Map(),tracks:DEMO.map(t=>({...t,owners:[]})),playlists:[],settings:{...defaults},history:[],reactions:[],touched:Date.now()};}
@@ -9,7 +10,7 @@ export function publicState(r,p){
   const q=r.round,revealed=['reveal','finished'].includes(r.phase),answer=q?.answers[p.id];
   return {code:r.code,phase:r.phase,host:r.host,me:p.id,settings:r.settings,serverNow:Date.now(),
     players:r.players.map(x=>({id:x.id,name:x.name,score:x.score,ready:x.ready,team:x.team,left:!!x.left,online:online(r,x),answered:!!q?.answers[x.id]})),
-    teams:teamScores(r),jokers:p.jokers,playlists:r.playlists,reactions:r.reactions,
+    teams:teamScores(r),jokers:p.jokers,playlists:r.playlists,saved:SAVED,reactions:r.reactions,
     tracks:r.phase==='lobby'?r.tracks.map(({id,title,artist,demo,owners})=>({id,title,artist,demo,owners})):[],
     history:r.phase==='finished'?r.history.map(h=>({...h,results:h.results.filter(x=>x.id===p.id)})):[],
     round:q?{id:q.id,number:Math.min(r.index+1,r.deck.length),total:r.deck.length,startsAt:q.startsAt,endsAt:q.endsAt,deadline:q.endsAt+(q.extra[p.id]||0),
