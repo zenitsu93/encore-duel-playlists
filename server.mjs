@@ -20,6 +20,10 @@ const server=http.createServer(async(req,res)=>{
   const url=new URL(req.url,'http://localhost');
   const send=(status,data)=>{res.writeHead(status,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'});res.end(JSON.stringify(data));};
   try{
+    if(req.method==='GET'&&url.pathname==='/api/health'){
+      res.setHeader('Access-Control-Allow-Origin','*');
+      send(200,{app:'encore',ready:true});return;
+    }
     if(req.method==='GET'&&url.pathname==='/api/events'){
       const r=roomFor(url.searchParams.get('code')),key=url.searchParams.get('token'),p=member(r,key),id=token();
       res.writeHead(200,{'Content-Type':'text/event-stream','Cache-Control':'no-cache','Connection':'keep-alive','X-Accel-Buffering':'no'});

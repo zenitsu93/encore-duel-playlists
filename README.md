@@ -4,6 +4,22 @@ Application multijoueur en français, sans dépendance npm. Node.js 20 ou supér
 
 ## Démarrage
 
+### Écran de réveil Render
+
+Le dossier `launcher/` contient une page d’attente aux couleurs d’Encore (vinyle animé, marine, ciel et or). Elle appelle `/api/health` puis ouvre le jeu dès que le serveur répond. Les paramètres du lien, dont `?room=ABCDEF`, sont conservés. Après deux minutes sans réponse, elle propose de réessayer ; les animations respectent la préférence de réduction des mouvements.
+
+Cette page doit être servie par un **Static Site séparé** : une page hébergée sur le serveur endormi ne peut pas s’afficher avant la page de réveil de Render.
+
+1. Déployer le serveur habituel avec cette version (elle ajoute `/api/health`).
+2. Dans Render, créer un **Static Site** depuis le même dépôt.
+3. Définir `ENCORE_SERVER_URL` avec l’origine du serveur, par exemple `https://mon-jeu.onrender.com`.
+4. Build Command : `node build-launcher.mjs`. Publish Directory : `dist-launcher`.
+5. Partager l’adresse du **Static Site** comme point d’entrée. Pour une invitation, ajouter `?room=CODE` à cette adresse.
+
+L’adresse directe du serveur affiche toujours l’attente Render si celui-ci dort. Le bouton de partage du jeu continue à générer des liens directs vers le serveur. Aucun déploiement Render n’est effectué par le script de build.
+
+Prévisualisation locale : définir `ENCORE_SERVER_URL=http://localhost:4317`, exécuter `node build-launcher.mjs`, puis servir `dist-launcher/` avec un serveur statique sur un autre port, en gardant `npm start` pour le jeu.
+
 ```sh
 npm start
 ```
