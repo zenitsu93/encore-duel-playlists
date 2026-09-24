@@ -1,4 +1,5 @@
 import {voiceState,voiceSignal} from './voice.mjs';
+import {voiceIceServers} from './ice-config.mjs';
 import http from 'node:http';
 import {readFile} from 'node:fs/promises';
 import {fileURLToPath} from 'node:url';
@@ -49,7 +50,7 @@ const server=http.createServer(async(req,res)=>{
       const lobby=()=>{if(r.phase!=='lobby')fail('Attends la fin de la partie.');};
       let result={ok:true};
       if(action==='state'){send(200,publicState(r,p));return;}
-      if(action==='voice-config'){send(200,{iceServers:process.env.VOICE_ICE_SERVERS?JSON.parse(process.env.VOICE_ICE_SERVERS):[{urls:'stun:stun.l.google.com:19302'}]});return;}
+      if(action==='voice-config'){send(200,{iceServers:await voiceIceServers()});return;}
       if(action==='voice-signal'){voiceSignal(r,p,b);send(200,{ok:true});return;}
       if(action==='voice-state'){voiceState(r,p,b);}
       else if(action==='chat'){chat(r,p,b.text);}

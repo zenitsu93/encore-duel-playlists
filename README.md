@@ -57,7 +57,9 @@ Le micro nécessite HTTPS ou localhost (HTTP sur une IP du réseau local ne suff
 [{"urls":"stun:stun.l.google.com:19302"},{"urls":"turn:turn.example.com:3478","username":"user","credential":"password"}]
 ```
 
-Sans cette variable, seul le STUN public est utilisé : certains réseaux ne pourront pas établir le vocal. Les identifiants TURN sont transmis aux membres authentifiés du salon ; utiliser des identifiants dédiés et limités. Aucun relais TURN n'est fourni avec le projet. La caméra n'est pas activée. Le test `test/voice.test.mjs` vérifie les commandes et la signalisation avec WebRTC simulé ; une écoute sur deux appareils est nécessaire pour valider les micros et le réseau réels.
+En local, ce même tableau JSON peut être enregistré dans `voice-ice.local.json` à la racine du projet. Ce fichier est exclu de Git et n'est pas servi comme fichier public. La variable `VOICE_ICE_SERVERS` reste prioritaire. Le fichier est relu à chaque entrée dans le vocal : après une modification, quitter puis rejoindre le vocal suffit. Sur un hébergement, configurer la variable d'environnement puisque le fichier local n'est pas déployé avec Git.
+
+Sans variable ni fichier local, seul le STUN public est utilisé : certains réseaux ne pourront pas établir le vocal. Les identifiants TURN sont transmis aux membres authentifiés du salon ; utiliser des identifiants dédiés et limités. Aucun relais TURN n'est fourni avec le projet. La caméra n'est pas activée. Le test `test/voice.test.mjs` vérifie les commandes et la signalisation avec WebRTC simulé ; une écoute sur deux appareils est nécessaire pour valider les micros et le réseau réels.
 
 Références : [getUserMedia](https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia), [relais TURN](https://webrtc.org/getting-started/turn-server).
 
