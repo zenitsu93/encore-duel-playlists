@@ -16,22 +16,23 @@ test('voice signaling only reaches the intended active room member',()=>{
   voiceState(r,b,{active:false,voiceId:'session-b'});assert.equal(b.voice,null);assert.throws(()=>voiceSignal(r,a,signal));
 });
 
-function client(){
+function client(me='a'){
   const tracks=[],audios=[],pcs=[],calls=[];let micCalls=0;
   class PC {
-    constructor(){this.connectionState='new';this.candidates=[];pcs.push(this);}
-    addTransceiver(){this.sender={replaceTrack:async t=>{this.track=t;}};return {sender:this.sender};}
-    async createOffer(){return {type:'offer',sdp:'offer'};}
-    async createAnswer(){return {type:'answer',sdp:'answer'};}
+    constructor(){this.connectionState='new';this.candidates=[];this.transceivers=[];pcs.push(this);}
+    addTransceiver(kind,{direction}={direction:'sendrecv'}){const transceiver={mid:null,direction,receiver:{track:{kind}},sender:{replaceTrack:async t=>{transceiver.sender.track=t;this.track=t;}}};this.transceivers.push(transceiver);return transceiver;}
+    getTransceivers(){return this.transceivers;}
+    async createOffer(){this.transceivers.forEach((t,i)=>t.mid=String(i));return {type:'offer',sdp:'offer'};}
+    async createAnswer(){this.transceivers.filter(t=>t.mid!==null).forEach(t=>t.currentDirection=t.direction);return {type:'answer',sdp:'answer'};}
     async setLocalDescription(d){this.localDescription=d;}
-    async setRemoteDescription(d){this.remoteDescription=d;}
+    async setRemoteDescription(d){this.remoteDescription=d;if(d.type==='offer'&&!this.transceivers.some(t=>t.mid==='0')){const t=this.addTransceiver('audio',{direction:'recvonly'});t.mid='0';}}
     async addIceCandidate(c){this.candidates.push(c);}
     close(){this.closed=true;}
   }
   const context=vm.createContext({console,crypto:{randomUUID:()=> 'local-session'},setTimeout:()=>1,clearTimeout(){},RTCPeerConnection:PC,MediaStream:class{},navigator:{mediaDevices:{getUserMedia:async()=>{micCalls++;const t={enabled:true,stop(){this.stopped=true;}};tracks.push(t);return {getTracks:()=>[t],getAudioTracks:()=>[t]};}}},document:{body:{append(){}},createElement(){const a={setAttribute(){},play:()=>Promise.resolve(),pause(){this.paused=true;},remove(){this.removed=true;}};audios.push(a);return a;}}});
   vm.runInContext(readFileSync(new URL('../public/voice.js',import.meta.url),'utf8'),context);
   const voice=new context.VoiceChat(async(action,b)=>{calls.push([action,b]);return {iceServers:[]};},()=>{},()=>{});
-  const room={me:'a',players:[{id:'a'},{id:'b',online:true,voice:{id:'remote-session',muted:true}}]};voice.sync(room);
+  const room={me,players:[{id:me},{id:'b',online:true,voice:{id:'remote-session',muted:true}}]};voice.sync(room);
   return {voice,room,tracks,audios,pcs,calls,context,micCalls:()=>micCalls};
 }
 test('listen first, opt-in microphone, independent peer mute and cleanup',async()=>{
@@ -60,4 +61,16 @@ test('a microphone granted after leaving is immediately stopped',async()=>{
   c.context.navigator.mediaDevices.getUserMedia=()=>new Promise(resolve=>grant=resolve);
   const pending=c.voice.microphone();await c.voice.leave();const track={stop(){this.stopped=true;}};
   grant({getTracks:()=>[track]});await pending;assert.equal(track.stopped,true);assert.equal(c.voice.stream,null);assert.equal(c.voice.active,false);
+});
+for(const microphoneFirst of [true,false])test(`answering participant transmits on negotiated audio, mic ${microphoneFirst?'before':'after'} offer`,async()=>{
+  const c=client('z');await c.voice.join();const peer=c.voice.peers.get('b');await peer.queue;
+  if(microphoneFirst)await c.voice.microphone();
+  await c.voice.receive({from:'b',voiceId:'remote-session',targetVoiceId:c.voice.id,signal:{type:'offer',sdp:'offer'}});
+  if(!microphoneFirst)await c.voice.microphone();
+  const negotiated=peer.pc.getTransceivers().find(t=>t.mid==='0');
+  assert.equal(peer.sender,negotiated.sender,'microphone must use the sender negotiated by the incoming offer');
+  assert.equal(negotiated.sender.track,c.tracks[0]);assert.equal(negotiated.currentDirection,'sendrecv');assert(c.tracks[0].enabled);
+  assert.equal(peer.pc.getTransceivers().length,1,'no unused local audio transceiver');
+  await c.voice.microphone();assert.equal(negotiated.sender.track.enabled,false);await c.voice.microphone();assert.equal(negotiated.sender.track.enabled,true);
+  c.voice.stop();
 });
