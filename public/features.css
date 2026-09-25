@@ -52,3 +52,16 @@ body:has(.social-launcher) footer{padding-bottom:80px}#toast{z-index:60;bottom:9
 @media(max-width:600px){.social-launcher{bottom:14px;right:16px}.social-drawer{right:16px;bottom:72px;max-height:calc(100dvh - 92px)}}
 
 .mic-icon{width:20px;height:20px;flex-shrink:0;vertical-align:middle}
+.results-social-grid{display:grid;grid-template-columns:minmax(240px,340px) minmax(0,1fr);gap:22px;align-items:start;margin-bottom:22px}
+.result-ranking h2{margin-bottom:18px}.result-ranking .player .info{min-width:0;overflow-wrap:anywhere}
+.social-inline{min-width:0}.social-inline .social-drawer{position:static;width:100%;max-height:none;overflow:visible;box-shadow:none;padding:24px}
+.social-inline .section-head{flex-wrap:wrap;gap:10px}.social-label{font-size:14px;margin:0 0 12px;color:var(--soft)}
+.social-inline .social-voice{padding-bottom:18px;border-bottom:1px solid var(--line-soft);margin-bottom:18px}
+.social-inline .voice-members{max-height:210px;overflow-y:auto;overscroll-behavior:contain}
+.social-inline .chat-feed{max-height:260px;min-height:100px;margin:12px 0;overscroll-behavior:contain}
+.social-inline .chat-feed p{background:var(--bg-2);border:0;border-radius:12px;padding:10px 12px;margin-bottom:8px}
+.social-inline #chat-form{display:flex;gap:10px;align-items:end}.social-inline #chat-form .field{flex:1;min-width:0;margin:0}.social-inline #chat-form input{width:100%;min-width:0}.social-inline #chat-form .btn{min-height:46px}
+.social-inline .voice-controls .btn,.social-inline .voice-member .btn{min-height:44px}
+.result-recap summary{cursor:pointer;font-weight:600;font-size:16px}.result-recap[open] summary{margin-bottom:20px}.result-recap .track .info{min-width:0;overflow-wrap:anywhere}.result-recap .track .status{flex-shrink:0}
+@media(max-width:850px){.results-social-grid{grid-template-columns:minmax(0,1fr)}.results-page .podium{padding:22px 16px}.results-page .podium h1{font-size:clamp(28px,7vw,44px);overflow-wrap:anywhere}.results-page .podium .crown img{width:64px;height:64px}.results-page .crown{flex-wrap:wrap}}
+@media(max-width:600px){.results-page .summary-metrics{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:16px}.results-page .summary-metrics>div{padding:14px 8px;text-align:center}.results-page .summary-metrics strong{font-size:26px}.results-page .summary-metrics span{font-size:11px;line-height:1.4}.results-social-grid{gap:16px}.social-inline .social-drawer{padding:18px}.social-inline .voice-controls .btn{flex:1 1 130px;padding:12px 10px}.social-inline #chat-form{gap:8px}.social-inline #chat-form .btn{padding:12px}.social-inline .voice-member{gap:8px}.result-ranking .reaction-bar .btn{min-width:44px;min-height:44px}.result-recap{padding:18px}}
