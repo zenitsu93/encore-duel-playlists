@@ -77,6 +77,8 @@ Avant une ouverture publique : persistance, authentification adaptée, limitatio
 
 ## Vérifications
 
+Diagnostic audio réel (optionnel, sans micro physique) : installer temporairement `@roamhq/wrtc` avec `npm install --no-save --package-lock=false --ignore-scripts @roamhq/wrtc`, puis lancer `node test/voice-real.mjs`. Ajouter `--relay` pour forcer le relais TURN configuré. Ajouter `--server=https://votre-site.onrender.com` pour tester aussi la signalisation et la configuration du serveur déployé : le script crée un salon de diagnostic, transmet un son synthétique entre deux participants, vérifie la réception dans les deux sens puis quitte le salon. Ce test ne valide pas les permissions ni la sortie audio des navigateurs mobiles.
+
 ```sh
 npm test
 # Avec le serveur lancé :

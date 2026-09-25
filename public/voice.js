@@ -1,19 +1,28 @@
 // Kept outside #app: remote audio must survive game re-renders.
 class VoiceChat {
   constructor(api,refresh,notify){Object.assign(this,{api,refresh,notify,peers:new Map(),mutedPeers:new Set(),active:false,busy:false,muted:true,id:null,stream:null,room:null,iceServers:[]});}
+  unlockOutput(){
+    const AudioContext=globalThis.AudioContext||globalThis.webkitAudioContext;
+    if(!AudioContext)return;
+    try{
+      if(!this.output){this.output=new AudioContext();const output=this.output;output.onstatechange=()=>{if(this.output!==output)return;for(const p of this.peers.values())if(p.source)p.blocked=output.state!=='running';this.refresh();};}
+      const output=this.output;output.resume().then(()=>{if(this.output!==output)return;for(const p of this.peers.values())if(p.source)p.blocked=output.state!=='running';this.refresh();},()=>{if(this.output===output){for(const p of this.peers.values())p.blocked=true;this.refresh();}});
+    }catch{this.notify('Clique sur « Activer l’écoute » pour entendre les voix.');}
+  }
   async join(){
     if(this.busy||this.active)return;
     if(!globalThis.RTCPeerConnection)throw Error('Le vocal nécessite un navigateur compatible et une connexion HTTPS.');
-    this.busy=true;this.confirmed=false;this.id=crypto.randomUUID();const generation=this.id;this.refresh();
+    // Unlock playback during the click, before any network request loses user activation.
+    this.unlockOutput();this.busy=true;this.confirmed=false;this.id=crypto.randomUUID();const generation=this.id;this.refresh();
     try{const config=await this.api('voice-config');if(this.id!==generation)return;this.iceServers=config.iceServers;this.active=true;
       await this.api('voice-state',{active:true,muted:true,voiceId:this.id});this.sync(this.room);
     }catch(e){this.stop();throw e;}finally{this.busy=false;this.refresh();}
   }
-  stop(){this.active=false;this.id=null;this.stream?.getTracks().forEach(t=>t.stop());this.stream=null;this.muted=true;for(const id of [...this.peers.keys()])this.drop(id);this.refresh();}
+  stop(){this.active=false;this.id=null;this.stream?.getTracks().forEach(t=>t.stop());this.stream=null;this.muted=true;for(const id of [...this.peers.keys()])this.drop(id);const output=this.output;this.output=null;if(output){output.onstatechange=null;output.close().catch(()=>{});}this.refresh();}
   async leave(){const id=this.id;this.stop();if(id)await this.api('voice-state',{active:false,voiceId:id});}
-  drop(id){const peer=this.peers.get(id);if(!peer)return;this.peers.delete(id);clearTimeout(peer.timer);peer.pc.close();peer.audio.pause();peer.audio.srcObject=null;peer.audio.remove();}
+  drop(id){const peer=this.peers.get(id);if(!peer)return;this.peers.delete(id);clearTimeout(peer.timer);peer.pc.close();peer.source?.disconnect();peer.gain?.disconnect();peer.audio.pause();peer.audio.srcObject=null;peer.audio.remove();}
   async microphone(){
-    if(!this.active||this.busy)return;this.busy=true;this.refresh();const generation=this.id;
+    if(!this.active||this.busy)return;this.listen();this.busy=true;this.refresh();const generation=this.id;
     try{
       if(!this.stream){
         if(!navigator.mediaDevices?.getUserMedia)throw Error('Le micro nécessite HTTPS (ou localhost).');
@@ -29,9 +38,9 @@ class VoiceChat {
     }catch(e){this.muted=true;this.stream?.getAudioTracks().forEach(t=>t.enabled=false);throw Error(e.name==='NotAllowedError'?'Micro refusé. Autorise-le dans les réglages du navigateur, puis réessaie.':e.message);}
     finally{this.busy=false;this.refresh();}
   }
-  togglePeer(id){if(this.mutedPeers.has(id))this.mutedPeers.delete(id);else this.mutedPeers.add(id);const p=this.peers.get(id);if(p){p.audio.muted=this.mutedPeers.has(id);if(!p.audio.muted)this.play(p);}this.refresh();}
-  play(p){p.audio.play().then(()=>{p.blocked=false;this.refresh();},()=>{p.blocked=true;this.refresh();});}
-  listen(){for(const p of this.peers.values())this.play(p);}
+  togglePeer(id){if(this.mutedPeers.has(id))this.mutedPeers.delete(id);else this.mutedPeers.add(id);const p=this.peers.get(id);if(p){p.audio.muted=this.mutedPeers.has(id);if(p.gain)p.gain.gain.value=p.audio.muted?0:1;if(!p.audio.muted){this.unlockOutput();this.play(p);}}this.refresh();}
+  play(p){if(p.source){p.blocked=this.output?.state!=='running';this.refresh();return;}p.blocked=true;this.refresh();p.audio.play().then(()=>{if(this.peers.get(p.id)!==p)return;p.blocked=false;this.refresh();},()=>{if(this.peers.get(p.id)!==p)return;p.blocked=true;this.refresh();});}
+  listen(){this.unlockOutput();for(const p of this.peers.values())this.play(p);}
   sync(room){
     this.room=room;if(!this.active||!room)return;
     const me=room.players.find(p=>p.id===room.me);
@@ -51,7 +60,14 @@ class VoiceChat {
     const p={id,voiceId,pc,audio,sender,queue:Promise.resolve(),candidates:[],status:'Connexion…',localId:this.id};this.peers.set(id,p);
     if(this.stream&&sender)p.queue=sender.replaceTrack(this.stream.getAudioTracks()[0]);
     pc.onicecandidate=e=>{if(e.candidate)this.send(p,{type:'candidate',candidate:e.candidate.toJSON()}).catch(()=>{});};
-    pc.ontrack=e=>{audio.srcObject=new MediaStream([e.track]);this.play(p);};
+    pc.ontrack=e=>{
+      if(this.peers.get(id)!==p)return;const stream=new MediaStream([e.track]);
+      if(this.output){
+        try{p.source?.disconnect();p.gain?.disconnect();p.source=this.output.createMediaStreamSource(stream);p.gain=this.output.createGain();p.gain.gain.value=this.mutedPeers.has(id)?0:1;p.source.connect(p.gain);p.gain.connect(this.output.destination);}
+        catch{p.source?.disconnect();p.gain?.disconnect();p.source=null;p.gain=null;audio.srcObject=stream;}
+      }else audio.srcObject=stream;
+      e.track.onunmute=()=>{if(this.peers.get(id)===p)this.play(p);};this.play(p);
+    };
     pc.onconnectionstatechange=()=>{if(this.peers.get(id)!==p)return;p.status=pc.connectionState==='connected'?'En vocal':pc.connectionState==='failed'?'Connexion impossible. Quitte puis rejoins le vocal.':pc.connectionState==='disconnected'?'Reconnexion…':'Connexion…';this.refresh();};
     p.timer=setTimeout(()=>{if(pc.connectionState!=='connected'){p.status='Connexion impossible. Quitte puis rejoins le vocal.';this.refresh();}},20000);
     return p;

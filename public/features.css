@@ -69,9 +69,9 @@
 @keyframes confetti-fall{from{transform:translateY(-30px) rotate(0);opacity:0}15%{opacity:1}to{transform:translateY(105vh) rotate(500deg);opacity:0}}
 @media(prefers-reduced-motion:reduce){.winner-identity,.winner-confetti i{animation:none}.winner-confetti{display:none}}
 
-/* Fin de partie : classement à droite sur grand écran et en premier sur mobile ; chat et vocal dans la colonne large. */
-.results-social-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(260px,360px);gap:22px;align-items:start;margin-bottom:22px}
-.results-social-grid>.result-ranking{grid-column:2;grid-row:1}.results-social-grid>#social-widget{grid-column:1;grid-row:1;min-width:0}
+/* Fin de partie : classement en premier ; sur grand écran, chat et vocal dans une colonne de la largeur d'un téléphone, pour garder la même conversation qu'en mobile. */
+.results-social-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(340px,420px);gap:22px;align-items:start;margin-bottom:22px}
+.results-social-grid>#social-widget{min-width:0}
 .result-ranking h2{margin-bottom:18px}.result-ranking .player .info{min-width:0;overflow-wrap:anywhere}
 .afterparty-invite{align-self:stretch;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:36px 26px}
 .afterparty-icon{display:inline-grid;place-items:center;width:56px;height:56px;border-radius:50%;background:#6cabdd22;color:var(--sky-hi);margin-bottom:16px}.afterparty-icon .mic-icon{width:28px;height:28px}
@@ -103,5 +103,5 @@
 .chat-empty{margin:auto;padding:24px 0;text-align:center;font-size:13px;color:var(--muted)}
 #chat-form{display:flex;gap:8px}#chat-form input{flex:1;min-width:0;min-height:46px}#chat-form .btn{min-height:46px;flex-shrink:0}
 
-@media(max-width:850px){.results-social-grid{grid-template-columns:minmax(0,1fr)}.results-social-grid>.result-ranking,.results-social-grid>#social-widget{grid-column:auto;grid-row:auto}.afterparty-invite{padding:28px 20px}.results-page .podium{padding:22px 16px}.results-page .podium h1{font-size:clamp(28px,7vw,44px);overflow-wrap:anywhere}.results-page .podium .crown img{width:64px;height:64px}.results-page .crown{flex-wrap:wrap}}
+@media(max-width:850px){.results-social-grid{grid-template-columns:minmax(0,1fr)}.afterparty-invite{padding:28px 20px}.results-page .podium{padding:22px 16px}.results-page .podium h1{font-size:clamp(28px,7vw,44px);overflow-wrap:anywhere}.results-page .podium .crown img{width:64px;height:64px}.results-page .crown{flex-wrap:wrap}}
 @media(max-width:600px){.results-page .summary-metrics{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:16px}.results-page .summary-metrics>div{padding:14px 8px;text-align:center}.results-page .summary-metrics strong{font-size:26px}.results-page .summary-metrics span{font-size:11px;line-height:1.4}.results-social-grid{gap:16px}.social-drawer{padding:18px}.voice-member{gap:10px}.result-ranking .reaction-bar .btn{min-width:44px;min-height:44px}.result-recap{padding:18px}.winner-medal img{width:92px;height:92px;border-radius:24px}}

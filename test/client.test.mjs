@@ -76,6 +76,16 @@ test('audio keeps playing after answer until personal deadline',()=>{
  const c=client();c.run(`let pauses=0;audio={pause(){pauses++;}};state={phase:'playing',round:{id:'r',canAnswer:true,selection:{title:'a'},startsAt:Date.now()-1000,endsAt:Date.now()+10000,deadline:Date.now()+15000}};playKey='r:'+state.round.deadline;tick();`);assert.equal(c.run('pauses'),0);
  c.run('state.round.deadline=Date.now()-1;tick();');assert.equal(c.run('pauses'),1);
 });
+test('music fades during the last 800ms without pausing early or changing user volume',()=>{
+ const c=client();c.run(`var pauses=0;audio={volume:1,pause(){pauses++;}};volume=.6;clipFade={endsAt:Date.now()+400,duration:800};updateMusicVolume();`);
+ assert(c.run('audio.volume')>.25&&c.run('audio.volume')<=.31);assert.equal(c.run('volume'),.6);assert.equal(c.run('pauses'),0);
+ c.run('clipFade.endsAt=Date.now()-1;updateMusicVolume();');assert.equal(c.run('audio.volume'),0);
+ c.run('stopSound();clipFade=null;updateMusicVolume();');assert.equal(c.run('audio.volume'),.6);
+});
+test('decoded audio fade reaches zero at the exact clip end',()=>{
+ const c=client();c.run(`var automation=[];ctx={currentTime:10,destination:{},createGain(){return {gain:{value:0,setValueAtTime(v,t){automation.push([v,t]);},linearRampToValueAtTime(v,t){automation.push([v,t]);}},connect(){}};}};clipGains(2);`);
+ assert.deepEqual(JSON.parse(c.run('JSON.stringify(automation)')),[[1,10],[1,11.2],[0,12]]);
+});
 test('finale : annonce puis invitation, chat ouvert seulement au clic et fermé à la revanche',async()=>{
  const c=client();c.run(`state=${JSON.stringify(state)};render();`);assert(!c.element('#app').innerHTML.includes('id="social-widget"'));
  c.run("var scheduled=[];setTimeout=(fn,ms)=>{scheduled.push({fn,ms});return 1;};state.phase='finished';render();");

@@ -62,6 +62,21 @@ test('a microphone granted after leaving is immediately stopped',async()=>{
   const pending=c.voice.microphone();await c.voice.leave();const track={stop(){this.stopped=true;}};
   grant({getTracks:()=>[track]});await pending;assert.equal(track.stopped,true);assert.equal(c.voice.stream,null);assert.equal(c.voice.active,false);
 });
+test('mobile output is unlocked before network and remote tracks use an independent audio graph',async()=>{
+  const c=client(),order=[],outputs=[];const api=c.voice.api;c.voice.api=async(...args)=>{order.push('network');return api(...args);};
+  c.context.AudioContext=class{
+    constructor(){this.state='suspended';this.destination={};outputs.push(this);}
+    resume(){order.push('resume');this.state='running';return Promise.resolve();}
+    close(){this.state='closed';return Promise.resolve();}
+    createMediaStreamSource(){return {connect(){},disconnect(){this.disconnected=true;}};}
+    createGain(){return {gain:{value:1},connect(){},disconnect(){this.disconnected=true;}};}
+  };
+  await c.voice.join();assert.equal(order[0],'resume');const p=c.voice.peers.get('b');
+  p.pc.ontrack({track:{kind:'audio'}});assert(p.source);assert.equal(p.blocked,false);assert.equal(p.audio.srcObject,undefined,'no duplicate native playback');
+  c.voice.togglePeer('b');assert.equal(p.gain.gain.value,0);c.voice.togglePeer('b');assert.equal(p.gain.gain.value,1);
+  outputs[0].state='suspended';c.voice.play(p);assert.equal(p.blocked,true);c.voice.listen();await Promise.resolve();assert.equal(p.blocked,false);
+  await c.voice.leave();assert.equal(outputs[0].state,'closed');assert(p.source.disconnected);assert(p.gain.disconnected);
+});
 for(const microphoneFirst of [true,false])test(`answering participant transmits on negotiated audio, mic ${microphoneFirst?'before':'after'} offer`,async()=>{
   const c=client('z');await c.voice.join();const peer=c.voice.peers.get('b');await peer.queue;
   if(microphoneFirst)await c.voice.microphone();
