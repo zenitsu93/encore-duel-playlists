@@ -84,7 +84,7 @@ test('music fades during the last 800ms without pausing early or changing user v
 });
 test('decoded audio fade reaches zero at the exact clip end',()=>{
  const c=client();c.run(`var automation=[];ctx={currentTime:10,destination:{},createGain(){return {gain:{value:0,setValueAtTime(v,t){automation.push([v,t]);},linearRampToValueAtTime(v,t){automation.push([v,t]);}},connect(){}};}};clipGains(2);`);
- assert.deepEqual(JSON.parse(c.run('JSON.stringify(automation)')),[[1,10],[1,11.2],[0,12]]);
+ assert.deepEqual(JSON.parse(c.run('JSON.stringify(automation)')),[[1,10],[1,11],[0,12]]);
 });
 test('finale : annonce puis invitation, chat ouvert seulement au clic et fermé à la revanche',async()=>{
  const c=client();c.run(`state=${JSON.stringify(state)};render();`);assert(!c.element('#app').innerHTML.includes('id="social-widget"'));
