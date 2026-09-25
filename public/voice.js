@@ -21,7 +21,7 @@ class VoiceChat {
         if(!this.active||this.id!==generation){stream.getTracks().forEach(t=>t.stop());return;}
         this.stream=stream;const track=stream.getAudioTracks()[0];track.enabled=false;
         track.onended=()=>{if(this.stream===stream){this.stream=null;this.muted=true;this.api('voice-state',{active:true,muted:true,voiceId:this.id}).catch(()=>{});this.refresh();}};
-        await Promise.all([...this.peers.values()].map(p=>p.sender.replaceTrack(track)));
+        await Promise.all([...this.peers.values()].filter(p=>p.sender).map(p=>p.sender.replaceTrack(track)));
       }
       if(this.id!==generation)return;
       this.muted=!this.muted;this.stream.getAudioTracks().forEach(t=>t.enabled=!this.muted);
@@ -45,9 +45,11 @@ class VoiceChat {
   }
   peer(id,voiceId){
     const pc=new RTCPeerConnection({iceServers:this.iceServers}),audio=document.createElement('audio');audio.autoplay=true;audio.setAttribute('playsinline','');audio.muted=this.mutedPeers.has(id);audio.hidden=true;document.body.append(audio);
-    const sender=pc.addTransceiver('audio',{direction:'sendrecv'}).sender;
+    // Only the offerer creates a transceiver. The answerer must use the one
+    // created by setRemoteDescription, or its microphone is never negotiated.
+    const sender=this.room.me<id?pc.addTransceiver('audio',{direction:'sendrecv'}).sender:null;
     const p={id,voiceId,pc,audio,sender,queue:Promise.resolve(),candidates:[],status:'Connexion…',localId:this.id};this.peers.set(id,p);
-    if(this.stream)p.queue=sender.replaceTrack(this.stream.getAudioTracks()[0]);
+    if(this.stream&&sender)p.queue=sender.replaceTrack(this.stream.getAudioTracks()[0]);
     pc.onicecandidate=e=>{if(e.candidate)this.send(p,{type:'candidate',candidate:e.candidate.toJSON()}).catch(()=>{});};
     pc.ontrack=e=>{audio.srcObject=new MediaStream([e.track]);this.play(p);};
     pc.onconnectionstatechange=()=>{if(this.peers.get(id)!==p)return;p.status=pc.connectionState==='connected'?'En vocal':pc.connectionState==='failed'?'Connexion impossible — quitte puis rejoins le vocal':pc.connectionState==='disconnected'?'Reconnexion…':'Connexion…';this.refresh();};
@@ -64,6 +66,12 @@ class VoiceChat {
       if(s.type==='candidate'){if(p.pc.remoteDescription)await p.pc.addIceCandidate(s.candidate);else p.candidates.push(s.candidate);return;}
       if(s.type==='offer'&&this.room.me<data.from)return;
       await p.pc.setRemoteDescription({type:s.type,sdp:s.sdp});
+      if(s.type==='offer'){
+        const transceiver=p.pc.getTransceivers().find(t=>t.mid!==null&&t.receiver.track.kind==='audio');
+        if(!transceiver)throw Error('Piste vocale absente.');
+        transceiver.direction='sendrecv';p.sender=transceiver.sender;
+        await p.sender.replaceTrack(this.stream?.getAudioTracks()[0]||null);
+      }
       for(const c of p.candidates)await p.pc.addIceCandidate(c);p.candidates=[];
       if(s.type==='offer'){await p.pc.setLocalDescription(await p.pc.createAnswer());await this.send(p,{type:'answer',sdp:p.pc.localDescription.sdp});}
     });
