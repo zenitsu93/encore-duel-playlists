@@ -17,7 +17,7 @@ export function publicState(r,p){
     teams:teamScores(r),jokers:p.jokers,playlists:r.playlists,saved:SAVED,reactions:r.reactions,messages:r.messages,meetUrl:r.meetUrl,
     tracks:r.phase==='lobby'?r.tracks.map(({id,title,artist,demo,owners,curator})=>({id,title,artist,demo,owners,curator})):[],
     history:r.phase==='finished'?r.history.map(h=>({...h,results:h.results.filter(x=>x.id===p.id)})):[],
-    round:q?{id:q.id,number:Math.min(r.index+1,r.deck.length),total:r.deck.length,startsAt:q.startsAt,endsAt:q.endsAt,deadline:q.endsAt+(q.extra[p.id]||0),
+    round:q?{id:q.id,number:Math.min(r.index+1,r.deck.length),total:r.deck.length,startsAt:q.startsAt,endsAt:q.endsAt,deadline:q.endsAt+(q.extra[p.id]||0),audioEndsAt:q.revealEndsAt||q.endsAt+Math.max(0,...Object.values(q.extra))+5000,revealedAt:q.revealedAt,
       audio:q.track.demo?{notes:q.track.notes}:{url:q.track.url},stage:r.settings.listening==='progressive'?[{at:0,length:2},{at:7,length:5},{at:17,length:10}]:null,
       questions:q.questions.map(x=>({field:x.field,options:r.settings.input==='qcm'?x.options.filter(o=>!q.hidden[p.id]?.includes(o.id)):[],...(revealed?{correct:x.correct,label:q.track[x.field]}:{})})),
       bonus:q.bonus?{options:q.bonus.options,...(revealed?{correct:q.track.owners}:{})}:null,
@@ -39,7 +39,8 @@ export function reveal(r,canceled=false,reason=''){
     p.score+=earned;return {id:p.id,earned,correct: canceled?0:correct,total:flags.length,bonusCorrect:!canceled&&bonusCorrect,elapsed:a?.elapsed??null};
   });
   r.history.push({number:r.index+1,title:q.track.title,artist:q.track.artist,canceled,reason,results:q.results});
-  broadcast(r);r.timer=setTimeout(()=>nextRound(r),5000);
+  q.revealedAt=Date.now();q.revealEndsAt=canceled?q.revealedAt+5000:q.endsAt+Math.max(0,...Object.values(q.extra))+5000;
+  broadcast(r);r.timer=setTimeout(()=>nextRound(r),Math.max(0,q.revealEndsAt-Date.now()));
 }
 function beginCountdown(r){clearTimeout(r.timer);r.phase='countdown';r.round.startsAt=Date.now()+3500;r.round.endsAt=r.round.startsAt+(r.settings.listening==='progressive'?30:r.settings.seconds)*1000;broadcast(r);r.timer=setTimeout(()=>{r.phase='playing';broadcast(r);scheduleEnd(r);},3500);}
 export function nextRound(r){

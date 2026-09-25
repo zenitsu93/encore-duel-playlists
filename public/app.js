@@ -9,9 +9,9 @@ function saveSession(){sessionStorage.setItem('encore-session',JSON.stringify(se
 let decodedClip=null,musicGain=null,fadeTimer,clipFade=null;
 function stopSound(){clearTimeout(clipTimer);clearTimeout(stallTimer);clearTimeout(fadeTimer);clipFade=null;for(const node of nodes){try{node.stop();}catch{}}nodes=[];audio?.pause();musicGain=null;}
 function resetAudio(){loadTask++;audioListeners?.abort();stopSound();stopCountdownSound();decodedClip=null;needsTap=false;audio=null;preloadId='';playKey='';}
-function clipGains(length){const master=ctx.createGain(),envelope=ctx.createGain(),start=ctx.currentTime,end=start+length,fade=Math.min(.8,length/2);master.gain.value=volume;envelope.gain.setValueAtTime(1,start);envelope.gain.setValueAtTime(1,end-fade);envelope.gain.linearRampToValueAtTime(0,end);envelope.connect(master);master.connect(ctx.destination);musicGain=master;return {master,envelope};}
+function clipGains(length){const master=ctx.createGain(),envelope=ctx.createGain(),start=ctx.currentTime,end=start+length,fade=Math.min(1,length/2);master.gain.value=volume;envelope.gain.setValueAtTime(1,start);envelope.gain.setValueAtTime(1,end-fade);envelope.gain.linearRampToValueAtTime(0,end);envelope.connect(master);master.connect(ctx.destination);musicGain=master;return {master,envelope};}
 function updateMusicVolume(){if(musicGain)musicGain.gain.value=volume;if(audio)audio.volume=volume*(clipFade?Math.max(0,Math.min(1,(clipFade.endsAt-Date.now())/clipFade.duration)):1);}
-function fadeMedia(current,length){const duration=Math.min(.8,length/2)*1000;clipFade={endsAt:Date.now()+length*1000,duration:Math.max(1,duration)};const step=()=>{if(audio!==current||!clipFade)return;updateMusicVolume();if(Date.now()<clipFade.endsAt)fadeTimer=setTimeout(step,40);};step();}
+function fadeMedia(current,length){const duration=Math.min(1,length/2)*1000;clipFade={endsAt:Date.now()+length*1000,duration:Math.max(1,duration)};const step=()=>{if(audio!==current||!clipFade)return;updateMusicVolume();if(Date.now()<clipFade.endsAt)fadeTimer=setTimeout(step,40);};step();}
 let countdownCue='',countdownNodes=[];
 function stopCountdownSound(){for(const {osc,gain} of countdownNodes){try{osc.stop();}catch{}osc.disconnect();gain.disconnect();}countdownNodes=[];countdownCue='';}
 function countdownSound(r,now){
@@ -59,7 +59,7 @@ async function playClip(r,key,length,seek){
     }
     if(!audio){playKey='';await preload();return;}
     stopSound();const current=audio;current.volume=volume;current.currentTime=Math.max(0,seek);await current.play();primed=true;
-    if(generation!==loadTask||state?.round?.id!==r.id||audio!==current||state.phase!=='playing')return;
+    if(generation!==loadTask||state?.round?.id!==r.id||audio!==current||!['playing','reveal'].includes(state.phase))return;
     const duration=Number.isFinite(current.duration)?Math.min(length,Math.max(0,current.duration-current.currentTime)):length;fadeMedia(current,duration);
     clipTimer=setTimeout(()=>{if(audio===current){current.volume=0;current.pause();}},Math.max(0,duration)*1000);
   }catch(err){if(generation!==loadTask||state?.round?.id!==r.id||err.name==='AbortError')return;
@@ -141,15 +141,18 @@ function connect(){events?.close();events=new EventSource(`/api/events?code=${en
   events.onerror=()=>{connected=false;if(voice?.active){voice.leave().catch(()=>{});toast('Vocal interrompu. Rejoins-le après la reconnexion.');}const c=document.querySelector('.connection');if(c)c.textContent='○ Reconnexion en cours…';if(!state){app.innerHTML='<div class="panel center"><h2>Reconnexion au salon…</h2><p class="hint">Le salon peut avoir expiré après un redémarrage.</p><button class="btn" data-action="exit">Revenir à l’accueil</button></div>';}};
   events.onmessage=e=>{const next=JSON.parse(e.data);offset=next.serverNow-Date.now();state=next;try{voice?.sync(state);}catch{voice?.leave().catch(()=>{});toast('Connexion vocale impossible. Rejoins le vocal pour réessayer.');}const key=state.round?.id;if(key!==lastRound){selection={};bonusSelection=null;lastRound=key;resetAudio();}if(state.round?.selection){selection={...state.round.selection};bonusSelection=state.round.bonusSelection;}
     if(state.round&&state.settings.input==='qcm')for(const q of state.round.questions)if(selection[q.field]&&!q.options.some(o=>o.id===selection[q.field]))delete selection[q.field];
-    if(!['playing','countdown','loading'].includes(state.phase)){stopSound();stopCountdownSound();}render();if(['loading','countdown','playing'].includes(state.phase))preload().catch(err=>toast(err.message));tick();};
+    if(!['playing','countdown','loading','reveal'].includes(state.phase)||state.round?.canceled){stopSound();stopCountdownSound();}render();if(['loading','countdown','playing'].includes(state.phase))preload().catch(err=>toast(err.message));tick();};
 }
-function tick(){const r=state?.round;if(!r||!['countdown','playing'].includes(state.phase))return;const now=Date.now()+offset,remaining=Math.max(0,(r.deadline-now)/1000),elapsed=(now-r.startsAt)/1000;
+function tick(){const r=state?.round;if(!r||!['countdown','playing','reveal'].includes(state.phase))return;const now=Date.now()+offset,remaining=Math.max(0,(r.deadline-now)/1000),elapsed=(now-r.startsAt)/1000;
   const timer=document.querySelector('#timer');if(timer)timer.textContent=state.phase==='countdown'?'•••':Math.ceil(remaining)+'s';const counter=document.querySelector('#countdown');if(counter)counter.textContent=Math.max(1,Math.min(3,Math.ceil(-elapsed)));const bar=document.querySelector('#progress');if(bar)bar.style.width=Math.min(100,remaining/((r.deadline-r.startsAt)/1000)*100)+'%';
-  countdownSound(r,now);
-  if(state.phase!=='playing'||!r.canAnswer)return;
-  if(remaining<=0){document.querySelector('#validate-answer')?.setAttribute('disabled','');stopSound();return;}
+  if(state.phase!=='reveal')countdownSound(r,now);
+  if(!r.canAnswer||!['playing','reveal'].includes(state.phase))return;
+  const audioRemaining=Math.max(0,((r.audioEndsAt??r.deadline)-now)/1000);
+  if(r.canceled||audioRemaining<=0){stopSound();return;}
+  if(state.phase==='reveal'){if(r.stage)playClip(r,r.id+':reveal',audioRemaining,10+Math.max(0,(now-r.revealedAt)/1000));else playClip(r,r.id+':'+(r.audioEndsAt??r.deadline),audioRemaining,Math.max(0,elapsed));return;}
+  if(remaining<=0){document.querySelector('#validate-answer')?.setAttribute('disabled','');if(r.stage)return;}
   if(r.stage){const active=r.stage.find(s=>elapsed>=s.at&&elapsed<s.at+s.length),label=document.querySelector('#stage-label');if(label)label.textContent=active?`Extrait de ${active.length} secondes`:'À toi de jouer, réfléchis…';if(active)playClip(r,r.id+':'+active.at,active.at+active.length-elapsed,elapsed-active.at);}
-  else playClip(r,r.id+':'+r.deadline,remaining,Math.max(0,elapsed));
+  else playClip(r,r.id+':'+(r.audioEndsAt??r.deadline),audioRemaining,Math.max(0,elapsed));
 }
 setInterval(tick,100);
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&socialOpen){socialOpen=false;render();document.querySelector('[data-action="social-toggle"]')?.focus();}});
@@ -180,7 +183,7 @@ document.addEventListener('click',async e=>{
     if(a==='exit'){voice?.stop();socialOpen=false;try{if(state)await api('leave');}catch{}events?.close();resetAudio();session=null;state=null;chatDraft='';sessionStorage.removeItem('encore-session');localStorage.removeItem('encore-last-session');history.replaceState(null,'','/');home();return;}
     if(a==='share'){try{await navigator.clipboard.writeText(`${location.origin}/?room=${state.code}`);toast('Lien copié !');}catch{toast(`Code du salon : ${state.code}`);}return;}
     if(a==='ready'){if(readyPending||state.players.find(p=>p.id===state.me).ready)return;readyPending=true;render();try{await unlock();await api('ready',{ready:true});}finally{readyPending=false;render();}return;}
-    if(a==='audio'){if(state.phase==='playing'){retryAudio();return;}await unlock();if(state.phase==='loading'&&state.round.audio.notes){preloadId='';await preload();}toast('Son activé');return;}
+    if(a==='audio'){if(['playing','reveal'].includes(state.phase)){retryAudio();return;}await unlock();if(state.phase==='loading'&&state.round.audio.notes){preloadId='';await preload();}toast('Son activé');return;}
     if(a==='answer'){await api('answer',{roundId:state.round.id,selection,bonus:bonusSelection});return;}
     if(a==='download'){const rows=[['Manche','Titre','Artiste','Bonnes réponses','Points','Annulée'],...state.history.map(h=>[h.number,h.title,h.artist,h.results[0]?.correct||0,h.results[0]?.earned||0,h.canceled?'Oui':'Non'])];const csv='\uFEFF'+rows.map(r=>r.map(x=>'"'+String(x).replaceAll('"','""')+'"').join(',')).join('\r\n');const url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'})),link=document.createElement('a');link.href=url;link.download='encore-resultats.csv';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);return;}
     await api(a);
