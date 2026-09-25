@@ -26,7 +26,7 @@ test('client : un clic sur une sélection toute prête l’importe',async()=>{
 test('invité : avatar et prêt, playlist visible sans commande de modification',()=>{
   const c=client(),s={...structuredClone(state),me:'b',avatars:['zoe'],playlists:[{name:'Soirée entre amis',owner:'a'}]};
   c.run(`state=${JSON.stringify(s)};render();`);const html=c.element('#app').innerHTML;
-  assert(html.includes('data-avatar="zoe"'));assert(html.includes('data-action="ready"'));assert(html.includes('Soirée entre amis'));assert(html.includes('social-launcher'));
+  assert(html.includes('data-avatar="zoe"'));assert(html.includes('data-action="ready"'));assert(html.includes('Soirée entre amis'));assert(!html.includes('social-launcher'));
   for(const control of ['playlist-form','data-saved=','data-remove-playlist=','data-setting=','id="team"'])assert(!html.includes(control),control);
   c.run("state.host='b';render();");assert(c.element('#app').innerHTML.includes('playlist-form'));
 });
@@ -36,13 +36,13 @@ test('prêt : double clic et clic tardif ne peuvent pas annuler le statut',async
   const first=c.click({action:'ready'});await c.click({action:'ready'});c.run('releaseUnlock();');await first;await c.click({action:'ready'});
   assert.deepEqual(JSON.parse(c.run('JSON.stringify(readyCalls)')),[['ready',{ready:true}]]);
   assert(c.element('#app').innerHTML.includes('data-action="ready" disabled'));
-  assert(c.element('#app').innerHTML.includes('class="mic-icon"'));assert(!c.element('#app').innerHTML.includes('Prêt ! Annuler'));
+  assert(c.run('micIcon(false)').includes('class="mic-icon"'));assert(!c.element('#app').innerHTML.includes('Prêt ! Annuler'));
 });
 test('client : réponse écrite, bonus, jokers et récapitulatif',()=>{
   const c=client(),s=structuredClone(state);s.phase='playing';s.settings.input='text';s.round={id:'r',number:1,total:1,startsAt:Date.now(),endsAt:Date.now()+30000,deadline:Date.now()+30000,canAnswer:true,questions:[{field:'title',options:[]}],bonus:{options:[{id:'a',label:'Alice'}]},stage:[{at:0,length:2}]};
   c.run(`state=${JSON.stringify(s)}; render();`);assert(c.element('#app').innerHTML.includes('data-text-field="title"'));assert(c.element('#app').innerHTML.includes('data-joker="time"'));assert(!c.element('#app').innerHTML.includes('data-joker="fifty"'));assert(c.element('#app').innerHTML.includes('Qui a ajouté ce son'));
   s.phase='finished';s.history=[{number:1,title:'Titre',artist:'Artiste',canceled:false,results:[{id:'a',correct:1,total:1,earned:150,elapsed:1200}]}];
-  c.run(`state=${JSON.stringify(s)}; render();`);assert(c.element('#app').innerHTML.includes('100%'));assert(c.element('#app').innerHTML.includes('1.2 s'));assert(c.element('#app').innerHTML.includes('data-action="download"'));
+  c.run(`state=${JSON.stringify(s)}; render();`);assert(c.element('#app').innerHTML.includes('100&nbsp;%'));assert(c.element('#app').innerHTML.includes('1,2 s'));assert(c.element('#app').innerHTML.includes('data-action="download"'));
 });
 test('audio : un refus autoplay reste local et le clic relance la manche courante',async()=>{
   const c=client();
@@ -68,12 +68,25 @@ test('audio : changer de manche conserve le lecteur sans charger une source vide
 
 test('chat escaped, drafts preserved, upload first',()=>{
  const c=client(),s=structuredClone(state);s.messages=[{name:'<b>Alice</b>',text:'<script>alert(1)</script>'}];s.meetUrl='https://meet.google.com/abc-defg-hij';
- c.run(`state=${JSON.stringify(s)};chatDraft='message en cours';render();`);const html=c.element('#app').innerHTML;
- assert(html.includes('&lt;script&gt;alert(1)&lt;/script&gt;'));assert(html.includes('value="message en cours"'));assert(html.includes('social-launcher'));assert(html.includes('Rejoindre le vocal'));assert(!html.includes('meet-form'));assert(html.indexOf('playlist-form')<html.indexOf('Les joueurs'));
+ c.run(`state=${JSON.stringify(s)};render();`);assert(c.element('#app').innerHTML.indexOf('playlist-form')<c.element('#app').innerHTML.indexOf('Les joueurs'));
+ c.run(`state.phase='finished';render();completeFinale();socialOpen=true;chatDraft='message en cours';render();`);const html=c.element('#app').innerHTML;
+ assert(html.includes('&lt;script&gt;alert(1)&lt;/script&gt;'));assert(html.includes('value="message en cours"'));assert(!html.includes('social-launcher'));assert(html.includes('Rejoindre le vocal'));assert(!html.includes('meet-form'));
 });
 test('audio keeps playing after answer until personal deadline',()=>{
  const c=client();c.run(`let pauses=0;audio={pause(){pauses++;}};state={phase:'playing',round:{id:'r',canAnswer:true,selection:{title:'a'},startsAt:Date.now()-1000,endsAt:Date.now()+10000,deadline:Date.now()+15000}};playKey='r:'+state.round.deadline;tick();`);assert.equal(c.run('pauses'),0);
  c.run('state.round.deadline=Date.now()-1;tick();');assert.equal(c.run('pauses'),1);
+});
+test('finale : annonce puis invitation, chat ouvert seulement au clic et fermé à la revanche',async()=>{
+ const c=client();c.run(`state=${JSON.stringify(state)};render();`);assert(!c.element('#app').innerHTML.includes('id="social-widget"'));
+ c.run("var scheduled=[];setTimeout=(fn,ms)=>{scheduled.push({fn,ms});return 1;};state.phase='finished';render();");
+ assert(c.element('#app').innerHTML.includes('winner-reveal'));assert(!c.element('#app').innerHTML.includes('id="social-widget"'));assert.equal(c.run('scheduled[0].ms'),3600);
+ c.run('render();');assert.equal(c.run('scheduled.length'),1,'incoming state does not restart the finale');
+ c.run('scheduled[0].fn();');assert(!c.element('#app').innerHTML.includes('winner-reveal'));assert(c.element('#app').innerHTML.includes('afterparty-invite'));assert(!c.element('#app').innerHTML.includes('id="chat-form"'));
+ await c.click({action:'social-toggle'});assert(c.element('#app').innerHTML.includes('id="chat-form"'));assert(c.element('#app').innerHTML.includes('data-action="voice-join"'));
+ await c.click({action:'social-toggle'});assert(!c.element('#app').innerHTML.includes('id="chat-form"'));
+ c.run("state.phase='lobby';render();");assert(!c.element('#app').innerHTML.includes('id="social-widget"'));assert.equal(c.run('socialOpen'),false);
+ c.run("state.phase='finished';render();");assert(c.element('#app').innerHTML.includes('winner-reveal'));
+ await c.click({action:'finale-skip'});assert(c.element('#app').innerHTML.includes('afterparty-invite'));
 });
 test('décompte : trois bips et départ distinct, sans répétition ni coupure de musique',()=>{
  const c=client();c.run(`var tones=[],pauses=0;audio={pause(){pauses++;}};ctx={state:'running',currentTime:0,destination:{},createOscillator(){const o={frequency:{value:0},connect(){},disconnect(){},start(){tones.push(this.frequency.value);},stop(){}};return o;},createGain(){return {gain:{setValueAtTime(){},linearRampToValueAtTime(){},exponentialRampToValueAtTime(){}},connect(){},disconnect(){}};}};var round={id:'count',canAnswer:true,startsAt:4000};`);

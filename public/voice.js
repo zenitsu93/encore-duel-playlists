@@ -52,11 +52,11 @@ class VoiceChat {
     if(this.stream&&sender)p.queue=sender.replaceTrack(this.stream.getAudioTracks()[0]);
     pc.onicecandidate=e=>{if(e.candidate)this.send(p,{type:'candidate',candidate:e.candidate.toJSON()}).catch(()=>{});};
     pc.ontrack=e=>{audio.srcObject=new MediaStream([e.track]);this.play(p);};
-    pc.onconnectionstatechange=()=>{if(this.peers.get(id)!==p)return;p.status=pc.connectionState==='connected'?'En vocal':pc.connectionState==='failed'?'Connexion impossible — quitte puis rejoins le vocal':pc.connectionState==='disconnected'?'Reconnexion…':'Connexion…';this.refresh();};
-    p.timer=setTimeout(()=>{if(pc.connectionState!=='connected'){p.status='Connexion impossible — quitte puis rejoins le vocal';this.refresh();}},20000);
+    pc.onconnectionstatechange=()=>{if(this.peers.get(id)!==p)return;p.status=pc.connectionState==='connected'?'En vocal':pc.connectionState==='failed'?'Connexion impossible. Quitte puis rejoins le vocal.':pc.connectionState==='disconnected'?'Reconnexion…':'Connexion…';this.refresh();};
+    p.timer=setTimeout(()=>{if(pc.connectionState!=='connected'){p.status='Connexion impossible. Quitte puis rejoins le vocal.';this.refresh();}},20000);
     return p;
   }
-  enqueue(p,task){p.queue=p.queue.then(()=>{if(this.active&&this.peers.get(p.id)===p)return task();}).catch(()=>{if(this.peers.get(p.id)===p){p.status='Connexion impossible — quitte puis rejoins le vocal';this.refresh();}});return p.queue;}
+  enqueue(p,task){p.queue=p.queue.then(()=>{if(this.active&&this.peers.get(p.id)===p)return task();}).catch(()=>{if(this.peers.get(p.id)===p){p.status='Connexion impossible. Quitte puis rejoins le vocal.';this.refresh();}});return p.queue;}
   send(p,signal){if(!this.active||this.peers.get(p.id)!==p)return Promise.resolve();return this.api('voice-signal',{voiceId:p.localId,targetVoiceId:p.voiceId,to:p.id,signal});}
   receive(data){
     if(!this.active||data.targetVoiceId!==this.id)return;
