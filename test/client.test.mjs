@@ -9,7 +9,8 @@ function client(){
   const context=vm.createContext({document:{querySelector:element,activeElement:null,addEventListener(type,fn){(handlers[type]??=[]).push(fn);}},sessionStorage:storage(),localStorage:storage(),location:{search:'',origin:'http://localhost:4317'},history:{replaceState(){}},URLSearchParams,URL,console,setInterval(){},setTimeout(){},clearTimeout(){},window:{},navigator:{}});
   vm.runInContext(source,context);
   const click=async dataset=>{for(const fn of handlers.click||[])await fn({target:{closest:()=>({dataset})}});};
-  return {context,element,click,run:code=>vm.runInContext(code,context)};
+  const submit=async target=>{for(const fn of handlers.submit||[])await fn({preventDefault(){},target});};
+  return {context,element,click,submit,run:code=>vm.runInContext(code,context)};
 }
 const state={code:'TEST42',host:'a',me:'a',phase:'lobby',players:[{id:'a',name:'Alice',score:0,ready:true,online:true,team:'lime'},{id:'b',name:'Bob',score:0,ready:true,online:true,team:'purple'}],tracks:[{id:'1',title:'<script>bad</script>',artist:'Artiste',owners:['a']}],settings:{mode:'both',input:'qcm',listening:'progressive',seconds:20,rounds:8,teams:true,jokers:true,balanced:true,bonus:true},playlists:[],jokers:{fifty:false,time:false},teams:[{id:'lime',name:'Or',score:0},{id:'purple',name:'Ciel',score:0}],reactions:[],history:[]};
 test('client : accueil, salon, variantes, rendu texte échappé',()=>{
@@ -97,6 +98,27 @@ test('finale : annonce puis invitation, chat ouvert seulement au clic et fermé 
  c.run("state.phase='lobby';render();");assert(!c.element('#app').innerHTML.includes('id="social-widget"'));assert.equal(c.run('socialOpen'),false);
  c.run("state.phase='finished';render();");assert(c.element('#app').innerHTML.includes('winner-reveal'));
  await c.click({action:'finale-skip'});assert(c.element('#app').innerHTML.includes('afterparty-invite'));
+});
+test('accueil : l’onglet solo crée une partie solo',async()=>{
+ const c=client();await c.click({view:'solo'});const html=c.element('#app').innerHTML;assert(html.includes('Commencer en solo'));assert(!html.includes('name="code"'));
+ c.run(`var created;unlock=async()=>{};connect=()=>{};api=async(action,data)=>{created=[action,data];return {code:'SOLO42',token:'t'};};FormData=class{get(key){return key==='name'?' Alice ':null;}};`);
+ await c.submit({id:'entry',querySelector:()=>null});
+ assert.equal(c.run('created[0]'),'create');assert.equal(c.run('created[1].solo'),true);assert.equal(c.run('created[1].name'),'Alice');
+});
+test('solo : salon sans invitation ni « prêt », son activé au lancement, fin sans chat',async()=>{
+ const c=client(),s={...structuredClone(state),solo:true,players:[{...state.players[0],ready:false}],settings:{...state.settings,teams:false}};
+ c.run(`state=${JSON.stringify(s)};render();var soloCalls=[],unlocked=0;unlock=async()=>{unlocked++;};api=async action=>{soloCalls.push(action);};`);
+ let html=c.element('#app').innerHTML;assert(html.includes('Ta playlist, ton chrono.'));assert(html.includes('playlist-form'));assert(html.includes('data-setting="jokers"'));
+ for(const control of ['data-action="share"','Les joueurs','data-action="ready"','data-setting="teams"','data-setting="bonus"','data-setting="balanced"'])assert(!html.includes(control),control);
+ assert(!/data-action="start"[^>]*disabled/.test(html),'lancement possible seul');
+ await c.click({action:'start'});assert.equal(c.run('unlocked'),1);assert.deepEqual(JSON.parse(c.run('JSON.stringify(soloCalls)')),['start']);
+ c.run("state.phase='finished';render();completeFinale();");html=c.element('#app').innerHTML;
+ assert(html.includes('data-action="replay"'));assert(html.includes('data-action="restart"'));assert(!html.includes('social-widget'));assert(!html.includes('Lancer la revanche'));
+ await c.click({action:'replay'});assert.equal(c.run('unlocked'),2);assert.deepEqual(JSON.parse(c.run('JSON.stringify(soloCalls)')),['start','replay']);
+});
+test('chrono figé quand la réponse est révélée avant la fin',()=>{
+ const c=client();c.run(`var t0=Date.now();state={phase:'reveal',round:{id:'r',canAnswer:false,startsAt:t0-5000,deadline:t0+15000,revealedAt:t0-1000}};tick();`);
+ assert.equal(c.element('#timer').textContent,'16s');
 });
 test('décompte : trois bips et départ distinct, sans répétition ni coupure de musique',()=>{
  const c=client();c.run(`var tones=[],pauses=0;audio={pause(){pauses++;}};ctx={state:'running',currentTime:0,destination:{},createOscillator(){const o={frequency:{value:0},connect(){},disconnect(){},start(){tones.push(this.frequency.value);},stop(){}};return o;},createGain(){return {gain:{setValueAtTime(){},linearRampToValueAtTime(){},exponentialRampToValueAtTime(){}},connect(){},disconnect(){}};}};var round={id:'count',canAnswer:true,startsAt:4000};`);

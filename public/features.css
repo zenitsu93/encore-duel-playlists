@@ -49,7 +49,7 @@
 .you{font-weight:400;color:var(--muted)}
 .crown-btn{min-width:32px;min-height:32px;border-radius:8px;font-size:16px}.crown-btn:hover{background:var(--panel-2)}
 .guest-lobby{max-width:680px;margin:0 auto}.guest-lobby .topline h1{font-size:clamp(34px,6vw,52px)}.guest-ready{margin-bottom:18px}.guest-ready .avatar-picker{margin-top:0}.guest-waiting{margin-bottom:0}.guest-playlists{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}.guest-playlists .badge{overflow-wrap:anywhere;max-width:100%}
-@media(max-width:850px){.room-grid>.stack{grid-row:auto}}
+@media(max-width:850px){.room-grid>.stack{grid-row:auto}.room-grid>.stack>:only-child{grid-column:1/-1}}
 @media(max-width:600px){.playlist-upload .playlist-form{flex-direction:column;align-items:stretch}}
 
 /* Partie */
@@ -72,6 +72,8 @@
 /* Fin de partie : classement en premier ; sur grand écran, chat et vocal dans une colonne de la largeur d'un téléphone, pour garder la même conversation qu'en mobile. */
 .results-social-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(340px,420px);gap:22px;align-items:start;margin-bottom:22px}
 .results-social-grid>#social-widget{min-width:0}
+.results-social-grid>.solo-next{grid-column:1/-1}
+@media(max-width:600px){.solo-next .row .btn{flex:1 1 100%}}
 .result-ranking h2{margin-bottom:18px}.result-ranking .player .info{min-width:0;overflow-wrap:anywhere}
 .afterparty-invite{align-self:stretch;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:36px 26px}
 .afterparty-icon{display:inline-grid;place-items:center;width:56px;height:56px;border-radius:50%;background:#6cabdd22;color:var(--sky-hi);margin-bottom:16px}.afterparty-icon .mic-icon{width:28px;height:28px}

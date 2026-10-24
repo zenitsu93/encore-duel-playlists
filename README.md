@@ -45,7 +45,7 @@
 | | |
 |---|---|
 | 🎧 **Un blind test, pas un quiz** | Extraits audio réels (10 à 30 s), écoute classique ou progressive, QCM ou réponse écrite. |
-| 👥 **2 à 12 joueurs, sans compte** | Un code de salon, un pseudo, un avatar. Rien à installer côté joueur. |
+| 👥 **En solo ou jusqu'à 12, sans compte** | Un code de salon, un pseudo, un avatar. Ou une partie solo contre le chrono. Rien à installer côté joueur. |
 | 🎵 **Playlists Spotify** | Collez un lien public : titres, artistes et extraits sont importés. Cinq sélections prêtes à jouer. |
 | 🃏 **Jokers, bonus, équipes** | 50/50, +5 secondes, bonus « Qui a ajouté ce son ? », équipes Or / Ciel. |
 | 🎙️ **Vocal intégré** | Chat texte et vocal WebRTC dans la page du jeu, micro activé seulement sur demande. |
@@ -90,6 +90,8 @@ Ouvrez **http://localhost:4317**. Le guide complet des règles est servi sur **h
 4. **Régler la partie.** Réglages par défaut : 8 manches, 20 secondes, QCM, question titre + artiste, tirage équilibré, bonus et jokers activés.
 5. **Jouer.** Tout le monde entend le même extrait au même moment. Plus la réponse est rapide, plus elle rapporte.
 6. **Podium.** Classement individuel ou par équipe, récap personnel, export CSV, revanche en un clic.
+
+> **Mode solo :** onglet « Jouer en solo » sur l'accueil. Même barème et mêmes jokers, sans invitation ni étape « prêt ». La réponse est révélée dès la validation, puis « Rejouer » relance une partie avec la même sélection. Pas d'équipes, de bonus d'origine ni de chat. Le salon solo est supprimé quand on le quitte.
 
 <details>
 <summary><strong>Détail des règles</strong></summary>
@@ -233,7 +235,7 @@ npm test                  # logique de jeu, client avec DOM simulé, Spotify, vo
 npm run test:integration  # partie complète à deux en HTTP/SSE (serveur lancé au préalable)
 ```
 
-Couverture des tests de logique : barèmes, réponses libres, répartition des sélections, bonus, équipes, jokers privés, annulation et restauration des jokers, événements périmés, préchargement, transfert de rôle. Le test d'intégration joue une partie entière avec chargement, points, réaction, revanche et transfert manuel.
+Couverture des tests de logique : barèmes, réponses libres, répartition des sélections, bonus, équipes, jokers privés, annulation et restauration des jokers, événements périmés, préchargement, transfert de rôle, mode solo. Le test d'intégration joue une partie entière avec chargement, points, réaction, revanche et transfert manuel, puis une partie solo jusqu'à « Rejouer ».
 
 <details>
 <summary><strong>Diagnostic vocal réel (optionnel)</strong></summary>

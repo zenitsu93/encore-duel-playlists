@@ -2,7 +2,8 @@ import {DEMO,token,questions,shuffle,points,matchesAnswer,balancedDeck,mergeTrac
 import {SAVED} from './playlists.mjs';
 export const defaults={mode:'both',rounds:8,seconds:20,input:'qcm',listening:'classic',balanced:true,bonus:true,teams:false,jokers:true};
 export const reactions=['😂','🔥','👏','😭','Je la connaissais !'];
-export function createRoom(code){return {code,phase:'lobby',players:[],clients:new Map(),tracks:DEMO.map(t=>({...t,owners:[]})),playlists:[],settings:{...defaults},history:[],reactions:[],messages:[],meetUrl:"",touched:Date.now()};}
+// En solo, un seul joueur affronte le chrono : personne ne peut rejoindre le salon.
+export function createRoom(code,solo=false){return {code,solo,phase:'lobby',players:[],clients:new Map(),tracks:DEMO.map(t=>({...t,owners:[]})),playlists:[],settings:{...defaults},history:[],reactions:[],messages:[],meetUrl:"",touched:Date.now()};}
 // Avatars « Big Smile » (Ashley Seo, CC BY 4.0, via DiceBear), servis depuis public/avatars/<id>.svg.
 export const AVATARS=['zoe','kofi','aya','omar','awa','mariam','yann','chloe','ines','sami','fatou','theo','moussa','rose','idriss','emma','mila','sara'];
 const takenAvatars=(r,except)=>r.players.filter(x=>!x.left&&x!==except).map(x=>x.avatar);
@@ -12,7 +13,7 @@ export function online(r,p){return [...r.clients.values()].some(c=>c.playerId===
 export function teamScores(r){return ['lime','purple'].map(id=>({id,name:id==='lime'?'Équipe Or':'Équipe Ciel',score:r.players.filter(p=>p.team===id).reduce((s,p)=>s+p.score,0)}));}
 export function publicState(r,p){
   const q=r.round,revealed=['reveal','finished'].includes(r.phase),answer=q?.answers[p.id];
-  return {code:r.code,phase:r.phase,host:r.host,me:p.id,settings:r.settings,serverNow:Date.now(),
+  return {code:r.code,solo:r.solo,phase:r.phase,host:r.host,me:p.id,settings:r.settings,serverNow:Date.now(),
     avatars:AVATARS,players:r.players.map(x=>({id:x.id,name:x.name,avatar:x.avatar,voice:x.voice||null,score:x.score,ready:x.ready,team:x.team,left:!!x.left,online:online(r,x),answered:!!q?.answers[x.id]})),
     teams:teamScores(r),jokers:p.jokers,playlists:r.playlists,saved:SAVED,reactions:r.reactions,messages:r.messages,meetUrl:r.meetUrl,
     tracks:r.phase==='lobby'?r.tracks.map(({id,title,artist,demo,owners,curator})=>({id,title,artist,demo,owners,curator})):[],
@@ -39,7 +40,7 @@ export function reveal(r,canceled=false,reason=''){
     p.score+=earned;return {id:p.id,earned,correct: canceled?0:correct,total:flags.length,bonusCorrect:!canceled&&bonusCorrect,elapsed:a?.elapsed??null};
   });
   r.history.push({number:r.index+1,title:q.track.title,artist:q.track.artist,canceled,reason,results:q.results});
-  q.revealedAt=Date.now();q.revealEndsAt=canceled?q.revealedAt+5000:q.endsAt+Math.max(0,...Object.values(q.extra))+5000;
+  q.revealedAt=Date.now();q.revealEndsAt=canceled||r.solo?q.revealedAt+5000:q.endsAt+Math.max(0,...Object.values(q.extra))+5000;
   broadcast(r);r.timer=setTimeout(()=>nextRound(r),Math.max(0,q.revealEndsAt-Date.now()));
 }
 function beginCountdown(r){clearTimeout(r.timer);r.phase='countdown';r.round.startsAt=Date.now()+3500;r.round.endsAt=r.round.startsAt+(r.settings.listening==='progressive'?30:r.settings.seconds)*1000;broadcast(r);r.timer=setTimeout(()=>{r.phase='playing';broadcast(r);scheduleEnd(r);},3500);}
@@ -71,7 +72,7 @@ export function removePlaylist(r,p,id){
   r.playlists=r.playlists.filter(x=>x!==pl);
 }
 export function start(r){
-  const active=r.players.filter(p=>!p.left&&online(r,p));if(active.length<2)fail('Invite au moins deux joueurs connectés.');if(active.some(p=>!p.ready))fail('Tous les joueurs connectés doivent être prêts.');
+  const active=r.players.filter(p=>!p.left&&online(r,p));if(active.length<(r.solo?1:2))fail('Invite au moins deux joueurs connectés.');if(!r.solo&&active.some(p=>!p.ready))fail('Tous les joueurs connectés doivent être prêts.');
   if(r.settings.teams){const a=active.filter(p=>p.team==='lime').length,b=active.length-a;if(!a||a!==b)fail('Les deux équipes doivent avoir le même nombre de joueurs.');}
   r.players=r.players.filter(p=>!p.left);if(r.settings.input==='qcm')questions(r.tracks[0]||fail('Ajoute des morceaux.'),r.tracks,r.settings.mode);
   r.deck=balancedDeck(r.tracks,r.settings.rounds,r.settings.balanced);if(!r.deck.length)fail('Ajoute des morceaux.');
@@ -82,7 +83,8 @@ export function answer(r,p,b){
   if(!q.participants.includes(p.id))fail('Tu participeras à la prochaine manche.');if(q.answers[p.id])fail('Réponse déjà validée.');
   const selection={};for(const x of q.questions){const value=b.selection?.[x.field];if(r.settings.input==='qcm'){if(!x.options.some(o=>o.id===value)||q.hidden[p.id]?.includes(value))fail('Choisis une réponse à chaque question.');}else if(typeof value!=='string'||!value.trim()||value.length>150)fail('Écris une réponse à chaque question.');selection[x.field]=value;}
   const bonus=q.bonus?.options.some(o=>o.id===b.bonus)?b.bonus:null;q.answers[p.id]={selection,bonus,elapsed:now-q.startsAt};
-  // Keep the scheduled deadline even when everyone has answered.
+  // Keep the scheduled deadline even when everyone has answered, except in solo: nobody else to wait for.
+  if(r.solo)reveal(r);
 }
 export function joker(r,p,b){
   const q=r.round;if(!r.settings.jokers||r.phase!=='playing'||b.roundId!==q.id||!q.participants.includes(p.id)||q.answers[p.id]||Date.now()>=q.endsAt+(q.extra[p.id]||0))fail('Joker indisponible.');

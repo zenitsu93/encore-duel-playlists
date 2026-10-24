@@ -41,8 +41,8 @@ const server=http.createServer(async(req,res)=>{
       if(action==='create'||action==='join'){
         const name=String(b.name||'').trim().slice(0,24);if(!name)fail('Choisis un pseudo.');let r;
         if(action==='create'){
-          if(rooms.size>=200)fail('Le serveur est plein.');let code;const chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';do{code=Array.from({length:6},()=>chars[randomInt(chars.length)]).join('');}while(rooms.has(code));r=createRoom(code);rooms.set(code,r);
-        }else{r=roomFor(String(b.code||'').toUpperCase());if(r.phase!=='lobby')fail('La partie a déjà commencé. Utilise ton lien de retour si tu étais déjà joueur.');if(r.players.filter(p=>!p.left).length>=12)fail('Le salon est complet.');}
+          if(rooms.size>=200)fail('Le serveur est plein.');let code;const chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';do{code=Array.from({length:6},()=>chars[randomInt(chars.length)]).join('');}while(rooms.has(code));r=createRoom(code,b.solo===true);rooms.set(code,r);
+        }else{r=roomFor(String(b.code||'').toUpperCase());if(r.solo)fail('Cette partie se joue en solo.');if(r.phase!=='lobby')fail('La partie a déjà commencé. Utilise ton lien de retour si tu étais déjà joueur.');if(r.players.filter(p=>!p.left).length>=12)fail('Le salon est complet.');}
         const p=addPlayer(r,name);r.touched=Date.now();broadcast(r);send(200,{code:r.code,token:p.token});return;
       }
       const r=roomFor(b.code),p=member(r,b.token);r.touched=Date.now();
@@ -60,7 +60,7 @@ const server=http.createServer(async(req,res)=>{
         // Accept legacy fields for older saved clients and integration scripts.
         for(const key of ['mode','rounds','seconds'])if(b[key]!==undefined)s[key]=b[key];
         if(!['title','artist','both'].includes(s.mode)||!['qcm','text'].includes(s.input)||!['classic','progressive'].includes(s.listening))fail('Mode invalide.');
-        r.settings={mode:s.mode,input:s.input,listening:s.listening,rounds:Math.max(1,Math.min(30,Math.floor(Number(s.rounds)||8))),seconds:Math.max(10,Math.min(30,Math.floor(Number(s.seconds)||20))),balanced:!!s.balanced,bonus:!!s.bonus,teams:!!s.teams,jokers:!!s.jokers};
+        r.settings={mode:s.mode,input:s.input,listening:s.listening,rounds:Math.max(1,Math.min(30,Math.floor(Number(s.rounds)||8))),seconds:Math.max(10,Math.min(30,Math.floor(Number(s.seconds)||20))),balanced:!!s.balanced,bonus:!!s.bonus,teams:!r.solo&&!!s.teams,jokers:!!s.jokers};
       }else if(action==='ready'){lobby();p.ready=p.ready||b.ready===true;}
       else if(action==='avatar'){lobby();setAvatar(r,p,b.avatar);}
       else if(action==='playlist-remove'){host();lobby();if(p.importing)fail('Un import est déjà en cours.');removePlaylist(r,p,b.playlistId);}
@@ -68,6 +68,7 @@ const server=http.createServer(async(req,res)=>{
       else if(action==='transfer'){host();const target=r.players.find(x=>x.id===b.playerId&&!x.left&&online(r,x));if(!target)fail('Choisis un joueur connecté.');r.host=target.id;}
       else if(action==='leave'){
         p.left=true;p.ready=false;p.voice=null;for(const [id,c]of r.clients)if(c.playerId===p.id){c.res.end();r.clients.delete(id);}if(r.host===p.id)transferHost(r);
+        if(r.solo){clearTimeout(r.timer);rooms.delete(r.code);}
       }else if(action==='tracks'){
         host();lobby();if(!Array.isArray(b.tracks)||!b.tracks.length||b.tracks.length>100)fail('Ajoute entre 1 et 100 morceaux.');addTracks(r,b.tracks.map(cleanTrack),p);
       }else if(action==='playlist'){
@@ -89,6 +90,8 @@ const server=http.createServer(async(req,res)=>{
       else if(action==='reaction'){
         if(!['reveal','finished'].includes(r.phase)||!reactions.includes(b.reaction))fail('Réaction indisponible.');if(Date.now()-(p.lastReaction||0)<1500)fail('Doucement sur les réactions !');p.lastReaction=Date.now();r.reactions.push({id:token(),name:p.name,text:b.reaction});r.reactions=r.reactions.slice(-8);
       }else if(action==='restart'){host();if(r.phase!=='finished')fail('La partie n’est pas terminée.');r.phase='lobby';r.round=null;r.history=[];r.reactions=[];r.players=r.players.filter(p=>!p.left);r.players.forEach(p=>{p.score=0;p.ready=false;});}
+      // Solo : relance directement une partie avec la même sélection et les mêmes règles.
+      else if(action==='replay'){host();if(!r.solo||r.phase!=='finished')fail('La partie n’est pas terminée.');start(r);}
       else fail('Action inconnue.');
       broadcast(r);send(200,result);return;
     }

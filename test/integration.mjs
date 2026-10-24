@@ -83,5 +83,22 @@ try{
   assert(state.saved.length>=5,'sélections sauvegardées proposées');
   for(const s of state.saved)assert.equal((await api('playlist',{...c,saved:s.id})).status,200,`sélection ${s.id} importable`);
   assert.equal((await api('playlist',{...c,saved:'../package'})).status,400,'sélection inconnue refusée');
-  console.log('OK : deux joueurs, QCM, réponse écrite progressive, équipes, bonus, joker, annulation audio, scores, récap, réaction, revanche, transfert de rôle et sélections sauvegardées.');
+  const solo=(await api('create',{name:'Solo test',solo:true})).body,soloController=new AbortController();let soloState;
+  const soloResponse=await fetch(`${base}/api/events?code=${solo.code}&token=${solo.token}`,{signal:soloController.signal});
+  const soloConsume=(async()=>{let buffer='';try{for await(const chunk of soloResponse.body){buffer+=new TextDecoder().decode(chunk);let i;while((i=buffer.indexOf('\n\n'))>=0){const event=buffer.slice(0,i);buffer=buffer.slice(i+2);if(event.startsWith('data: '))soloState=JSON.parse(event.slice(6));}}}catch(e){if(e.name!=='AbortError')throw e;}})();
+  try{
+    await until(()=>soloState?.solo===true);
+    assert.equal((await api('join',{name:'Intrus',code:solo.code})).status,400,'personne ne rejoint une partie solo');
+    assert.equal((await api('settings',{...solo,settings:{mode:'title',rounds:1,teams:true}})).status,200);
+    await until(()=>soloState.settings.rounds===1);assert.equal(soloState.settings.teams,false,'pas d’équipes en solo');
+    assert.equal((await api('start',solo)).status,200,'lancement seul, sans étape « prêt »');
+    await until(()=>soloState.phase==='loading');await api('audio-ready',{...solo,roundId:soloState.round.id,ok:true});
+    await until(()=>soloState.phase==='playing');
+    assert.equal((await api('answer',{...solo,roundId:soloState.round.id,selection:{title:soloState.round.questions[0].options[0].id}})).status,200);
+    await until(()=>soloState.phase==='reveal');assert(soloState.round.revealedAt<soloState.round.endsAt,'réponse révélée sans attendre le chrono');
+    await until(()=>soloState.phase==='finished');
+    assert.equal((await api('replay',solo)).status,200);await until(()=>soloState.phase==='loading');
+    assert.equal((await api('leave',solo)).status,200);assert.equal((await api('state',solo)).status,400,'le salon solo disparaît en partant');
+  }finally{soloController.abort();await soloConsume;}
+  console.log('OK : deux joueurs, QCM, réponse écrite progressive, équipes, bonus, joker, annulation audio, scores, récap, réaction, revanche, transfert de rôle, sélections sauvegardées et mode solo.');
 }finally{controller.abort();secondController.abort();await Promise.all([consume,secondConsume]);}

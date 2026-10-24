@@ -85,3 +85,10 @@ test('toutes les réponses attendent la fin du chrono',t=>{
  t.mock.timers.enable({apis:['setTimeout']});const {r,a,b}=fixture(t);start(r);readyAudio(r,a,{roundId:r.round.id,ok:true});readyAudio(r,b,{roundId:r.round.id,ok:true});t.mock.timers.tick(3500);r.round.startsAt=Date.now()-100;
  const selection=Object.fromEntries(r.round.questions.map(q=>[q.field,q.correct]));answer(r,a,{roundId:r.round.id,selection});answer(r,b,{roundId:r.round.id,selection});assert.equal(r.phase,'playing');assert.equal(r.history.length,0);t.mock.timers.tick(24000);assert.equal(r.phase,'reveal');assert.equal(r.history.length,1);
 });
+test('solo : seul et sans « prêt », la réponse révèle la manche aussitôt',t=>{
+ const r=createRoom('SOLO42',true),a=addPlayer(r,'Alice');r.clients.set(a.id,{token:a.token,playerId:a.id,res:{write(){}}});t.after(()=>clearTimeout(r.timer));
+ assert.equal(publicState(r,a).solo,true);start(r);assert.equal(r.phase,'loading');readyAudio(r,a,{roundId:r.round.id,ok:true});assert.equal(r.phase,'countdown');
+ playing(r);const selection=Object.fromEntries(r.round.questions.map(q=>[q.field,q.correct]));answer(r,a,{roundId:r.round.id,selection});
+ assert.equal(r.phase,'reveal');assert(a.score>100);assert.equal(r.round.revealEndsAt-r.round.revealedAt,5000);
+ const duo=createRoom('DUO42'),b=addPlayer(duo,'Bob');b.ready=true;duo.clients.set(b.id,{token:b.token,playerId:b.id,res:{write(){}}});assert.throws(()=>start(duo),/deux joueurs/,'le multijoueur exige toujours deux joueurs');
+});
